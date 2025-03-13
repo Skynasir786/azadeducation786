@@ -6,15 +6,11 @@ dotenv.config(); // Load environment variables
 
 const connectdb = async () => {
     try {
-        // Ensure the MongoDB password is URL-encoded if it contains special characters
-        const encodedPassword = encodeURIComponent(process.env.DB_PASSWORD);
-        
-        // Correctly formatted connection string
-        const connectionString = `mongodb+srv://website:${encodedPassword}@cluster0.neu99.mongodb.net/${dbname}?retryWrites=true&w=majority&appName=Cluster0`;
+        // Use the full connection string from the .env file
+        const connectionString = process.env.MONGO_URI;
 
         const connection = await mongoose.connect(connectionString, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
+          
         });
 
         console.log(`✅ MongoDB Connected: ${connection.connection.host}`);
