@@ -17,12 +17,14 @@ const LoginPage = () => {
   const handleLogin = async (values, { setSubmitting }) => {
     try {
       const response = await axios.post(
-        "https://api.azaddeal.com/users/login", // ✅ API URL fixed
+        "http://localhost:5000/users/login", // ✅ API URL fixed
         values,
         // { withCredentials: true } // ✅ Credentials enabled
       );
+      localStorage.setItem("user", JSON.stringify(response.data.data.user));
 
       console.log("User logged in:", response.data);
+
       navigate("/"); // ✅ Redirect to home after successful login
     } catch (error) {
       setError(error.response?.data?.message || "Login failed. Please try again.");

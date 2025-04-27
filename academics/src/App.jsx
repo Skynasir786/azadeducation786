@@ -491,6 +491,13 @@ function App() {
   // Enhanced Navbar Component
   const EnhancedNavbar = () => {
     const [isScrolled, setIsScrolled] = useState(false);
+    const [user, setUser] = useState(null);
+    useEffect(() => {
+      const storedUser = localStorage.getItem("user");
+      if (storedUser) {
+        setUser(JSON.parse(storedUser));
+      }
+    }, []);
 
     useEffect(() => {
       const handleScroll = () => {
@@ -621,14 +628,38 @@ function App() {
            </div>
    
            {/* Get Started Button - Updated gradient */}
-           <Link to="/signup">
-           <button
-             onClick={() => setShowLoginModal(true)}
-             className="bg-gradient-to-r from-emerald-500 to-blue-500 text-white px-6 py-2 rounded-full hover:from-emerald-600 hover:to-blue-600 transition-colors font-semibold shadow-lg hover:shadow-xl"
-           >
-             Get Started
-           </button>
-           </Link>
+           <div>
+  {user ? (
+    <Link to="/teacherdashboard" className="flex items-center gap-3 group">
+      <div className="w-11 h-11 rounded-full overflow-hidden bg-gradient-to-r from-emerald-500 to-blue-500 flex items-center justify-center text-white font-bold text-xl shadow-md group-hover:scale-105 transition-transform">
+        {user.profilePicture ? (
+          <img
+            src={user.profilePicture}
+            alt="Profile"
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          user.fullName?.charAt(0).toUpperCase()
+        )}
+      </div>
+      <span className="text-gray-800 font-semibold text-lg group-hover:text-emerald-600 transition-colors capitalize">
+        {user.fullName}
+      </span>
+    </Link>
+  ) : (
+    <Link to="/signup">
+      <button
+        onClick={() => setShowLoginModal(true)}
+        className="bg-gradient-to-r from-emerald-500 to-blue-500 text-white px-6 py-2 rounded-full hover:from-emerald-600 hover:to-blue-600 transition-colors font-semibold shadow-lg hover:shadow-xl"
+      >
+        Get Started
+      </button>
+    </Link>
+  )}
+</div>
+
+
+
          </div>
    
          {/* Mobile Menu Toggle */}

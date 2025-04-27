@@ -220,7 +220,7 @@ const TeacherForm = () => {
             }
   
             // Submit the form to the backend API
-            const response = await fetch('https://api.azaddeal.com/users/register', {
+            const response = await fetch('http://localhost:5000/users/register', {
                 method: 'POST',
                 body: formDataToSubmit,
             });

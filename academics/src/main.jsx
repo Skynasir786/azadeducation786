@@ -12,6 +12,7 @@ import AboutUs from "./About.jsx";
 import Signup from "./Signup.jsx"
 import Admin from "./Adminpanel.jsx"
 import Login from "./login"
+import TeacherDashboard from "./Teacherdashboard.jsx";
 // Router banayein
 const router = createBrowserRouter([
     {
@@ -54,6 +55,10 @@ const router = createBrowserRouter([
     {
         path:"/login",
         element:<Login />,
+    },
+    {
+        path:"/teacherdashboard",
+        element:<TeacherDashboard/>,
     }
 
 
