@@ -7,7 +7,7 @@ import { FaUserGraduate, FaChalkboardTeacher, FaChalkboard,FaBookOpen,FaLinkedin
 import { BsLightningCharge, BsStars,BsPeopleFill, BsBookFill, } from "react-icons/bs";
 import { IoSchoolOutline } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
-
+import axios from "axios"
 // Constantimport { useNavigate } from "react-router-dom";
 
 const CURRENT_USER = "huzaifa8883";
@@ -140,7 +140,7 @@ const getLevelColor = (level) => {
   };
 
 // Sample Data
-const courses = [
+const course = [
   {
     id: 1,
     name: "Web Development Masterclass",
@@ -301,9 +301,25 @@ const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [showSearch, setShowSearch] = useState(false);
+  
+    
       const navigate = useNavigate();
     
   
+ useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/users/getcourse"); // Replace with your API endpoint
+        setCourses(response.data.courses);
+        console.log(response.data.courses)
+        setLoading(false);
+      } catch (error) {
+        console.error("Failed to fetch courses:", error);
+        setLoading(false);
+      }
+    };
+    fetchCourses();
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -749,197 +765,147 @@ const Hero = () => (
 );
 
 // Course Card Component
-const CourseCard = ({ course }) => (
-<motion.div
-  initial={{ opacity: 0, y: 20 }}
-  animate={{ opacity: 1, y: 0 }}
-  whileHover={{ 
-    y: -5,
-    scale: 1.02,
-    transition: { duration: 0.2 }
-  }}
-  className="bg-gradient-to-b from-white via-gray-50 to-gray-100/50 rounded-3xl fonting
-    shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:shadow-[0_20px_50px_rgb(0,0,0,0.15)]
-    transform transition-all duration-300 overflow-hidden border border-gray-200/50
-    backdrop-blur-sm"
->
-  {/* Enhanced Image Section */}
-  <div className="relative group">
-    <div className="absolute inset-0 bg-gradient-to-t 
-      from-black/90 via-black/50 to-transparent z-10 
-      group-hover:from-black/95 transition-all duration-300" />
-    <img 
-      src={course.image}
-      alt={course.name}
-      className="w-full h-64 object-cover transform group-hover:scale-110 
-        transition-transform duration-700 ease-in-out"
-    />
-
-    {/* Top Badge Row */}
-    <div className="absolute top-4 left-0 right-0 px-4 z-20 flex justify-between items-center">
-      {/* Level Badge */}
-      <div className="flex items-center space-x-2 bg-white/95 backdrop-blur-md px-4 py-2 
-        rounded-2xl shadow-lg border border-white/20">
-        <div className="w-2 h-2 rounded-full animate-pulse"
-          style={{ backgroundColor: getLevelColor(course.level) }} />
-        <span className="text-sm font-semibold bg-gradient-to-r from-gray-900 to-gray-700 
-          text-transparent bg-clip-text">
-          {course.level}
-        </span>
-      </div>
-
-      {/* Price Tag */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white 
-        px-6 py-2 rounded-2xl font-bold shadow-lg flex items-center space-x-2
-        border border-blue-400/20">
-        <span className="text-xs text-blue-200 uppercase">USD</span>
-        <span className="text-lg">${course.price}</span>
-      </div>
-    </div>
-
-    {/* Academy Badge */}
-    <div className="absolute top-20 left-4 z-20">
-      <div className="flex items-center space-x-2 bg-black/30 backdrop-blur-md 
-        px-4 py-2 rounded-2xl border border-white/10">
-        <FiBookOpen className="text-blue-300" />
-        <span className="text-sm font-medium text-white">
-          {course.academy || 'Tech Academy'}
-        </span>
-      </div>
-    </div>
-
-    {/* Course Info Overlay */}
-    <div className="absolute bottom-0 left-0 right-0 p-6 z-20">
-      <div className="space-y-4">
-        <h3 className="text-2xl font-bold text-white leading-tight group-hover:text-blue-200 
-          transition-colors duration-300">
-          {course.name}
-        </h3>
-        
-        <div className="flex flex-wrap gap-4">
-          {/* Location */}
-          <div className="flex items-center space-x-2 bg-white/10 backdrop-blur-md 
-            px-3 py-1.5 rounded-xl border border-white/10">
-            <FiMapPin className="text-blue-300" />
-            <span className="text-sm font-medium text-white">
-              {course.location || 'Online'}
-            </span>
-          </div>
-
-          {/* Duration */}
-          <div className="flex items-center space-x-2 bg-white/10 backdrop-blur-md 
-            px-3 py-1.5 rounded-xl border border-white/10">
-            <FiClock className="text-blue-300" />
-            <span className="text-sm font-medium text-white">{course.duration}</span>
-          </div>
-
-          {/* Students */}
-          <div className="flex items-center space-x-2 bg-white/10 backdrop-blur-md 
-            px-3 py-1.5 rounded-xl border border-white/10">
-            <FiUsers className="text-blue-300" />
-            <span className="text-sm font-medium text-white">
-              {course.enrolledStudents} students
-            </span>
-          </div>
+const CourseCard = () => {
+  const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
+    useEffect(() => {
+      const fetchCourses = async () => {
+        try {
+          const response = await axios.get("http://localhost:5000/users/getcourse"); // Replace with your API endpoint
+          setCourses(response.data.courses);
+          console.log(response.data.courses)
+          setLoading(false);
+        } catch (error) {
+          console.error("Failed to fetch courses:", error);
+          setLoading(false);
+        }
+      };
+      fetchCourses();
+    }, []);
+  return (
+    <>
+      {courses.map((course, index) => (
+  <motion.div  key={course._id}
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    whileHover={{ 
+      y: -5,
+      scale: 1.02,
+      transition: { duration: 0.2 }
+    }}
+    className="bg-gradient-to-b from-white via-gray-50 to-gray-100/50 rounded-3xl fonting
+      shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:shadow-[0_20px_50px_rgb(0,0,0,0.15)]
+      transform transition-all duration-300 overflow-hidden border border-gray-200/50
+      backdrop-blur-sm"
+  >
+    {/* Image Section */}
+    <div className="relative group">
+      <div className="absolute inset-0 bg-gradient-to-t 
+        from-black/90 via-black/50 to-transparent z-10 
+        group-hover:from-black/95 transition-all duration-300" />
+      <img 
+        src={course.thumbnail}
+        alt={course.title}
+        className="w-full h-64 object-cover transform group-hover:scale-110 
+          transition-transform duration-700 ease-in-out"
+      />
+  
+      {/* Top Row */}
+      <div className="absolute top-4 left-0 right-0 px-4 z-20 flex justify-between items-center">
+        {/* Level Badge */}
+        <div className="flex items-center space-x-2 bg-white/95 backdrop-blur-md px-4 py-2 
+          rounded-2xl shadow-lg border border-white/20">
+          <div className="w-2 h-2 rounded-full animate-pulse"
+            style={{ backgroundColor: getLevelColor(course.level) }} />
+          <span className="text-sm font-semibold bg-gradient-to-r from-gray-900 to-gray-700 
+            text-transparent bg-clip-text">
+            {course.level}
+          </span>
+        </div>
+  
+        {/* Price Tag */}
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white 
+          px-6 py-2 rounded-2xl font-bold shadow-lg flex items-center space-x-2
+          border border-blue-400/20">
+          <span className="text-xs text-blue-200 uppercase">USD</span>
+          <span className="text-lg">${course.price}</span>
         </div>
       </div>
-    </div>
-  </div>
-
-  {/* Content Section */}
-  <div className="p-6 space-y-6">
-    {/* Enhanced Category Tags */}
-    <div className="flex flex-wrap gap-2">
-      {course.categories?.map((category, index) => (
-        <span key={index} className="px-4 py-1.5 bg-gradient-to-r from-blue-50 to-indigo-50 
-          text-blue-700 rounded-xl text-sm font-medium border border-blue-100/80
-          hover:shadow-md transition-shadow duration-200">
-          {category}
-        </span>
-      ))}
-    </div>
-
-    {/* Description with Gradient Background */}
-    <div className="bg-gradient-to-r from-gray-50 to-white p-4 rounded-2xl border border-gray-100">
-      <p className="text-gray-600 text-sm leading-relaxed">
-        {course.description}
-      </p>
-    </div>
-
-    {/* Enhanced Features Grid */}
-    <div className="grid grid-cols-2 gap-4">
-      {[
-        { icon: FiVideo, text: `${course.totalLessons} lessons`, color: 'text-purple-500' },
-        { icon: FiDownload, text: 'Downloadable', color: 'text-green-500' },
-        { icon: FiAward, text: 'Certificate', color: 'text-yellow-500' },
-        { icon: FiClock, text: 'Lifetime access', color: 'text-blue-500' }
-      ].map((feature, index) => (
-        <div key={index} className="flex items-center space-x-3 p-3 rounded-xl
-          bg-gray-50 border border-gray-100 hover:bg-gray-100 transition-colors duration-200">
-          <feature.icon className={`text-lg ${feature.color}`} />
-          <span className="text-sm font-medium text-gray-700">{feature.text}</span>
-        </div>
-      ))}
-    </div>
-
-    {/* Enhanced Instructor Section */}
-    <div className="border-t border-gray-100 pt-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <div className="relative group">
-            <img
-              src={course.instructor.avatar}
-              alt={course.instructor.name}
-              className="w-14 h-14 rounded-full object-cover border-2 border-white 
-                shadow-[0_3px_10px_rgb(0,0,0,0.08)] group-hover:scale-110 transition-transform duration-200"
-            />
-            <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full
-              border-2 border-white shadow-sm flex items-center justify-center">
-              <FiCheck className="text-white text-xs" />
-            </div>
-          </div>
-          <div>
-            <p className="text-base font-bold text-gray-800 hover:text-blue-600 
-              transition-colors duration-200">
-              {course.instructor.name}
-            </p>
-            <p className="text-sm text-gray-500">{course.instructor.title}</p>
-          </div>
-        </div>
-
-        {/* Enhanced Rating */}
-        <div className="flex items-center space-x-2 bg-yellow-50 px-4 py-2 rounded-xl
-          border border-yellow-100">
-          <div className="flex -space-x-1">
-            {[1, 2, 3, 4, 5].map((star) => (
-              <FiStar key={star} className={`text-yellow-400 ${
-                star <= Math.floor(course.rating) ? 'fill-current' : ''
-              }`} />
-            ))}
-          </div>
-          <span className="text-sm font-bold text-yellow-700">
-            {course.rating || '4.5'}
+  
+      {/* Language Badge */}
+      <div className="absolute top-20 left-4 z-20">
+        <div className="flex items-center space-x-2 bg-black/30 backdrop-blur-md 
+          px-4 py-2 rounded-2xl border border-white/10">
+          <FiBookOpen className="text-blue-300" />
+          <span className="text-sm font-medium text-white">
+            {course.language}
           </span>
         </div>
       </div>
+  
+      {/* Title and Small Info */}
+      <div className="absolute bottom-0 left-0 right-0 p-6 z-20">
+        <div className="space-y-4">
+          <h3 className="text-2xl font-bold text-white leading-tight group-hover:text-blue-200 
+            transition-colors duration-300">
+            {course.title}
+          </h3>
+        </div>
+      </div>
     </div>
-
-    {/* Enhanced Action Button */}
-    <motion.button
-      whileHover={{ scale: 1.02, y: -2 }}
-      whileTap={{ scale: 0.98 }}
-      className="w-full bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-800 
-        hover:from-blue-700 hover:via-blue-800 hover:to-indigo-900 
-        text-white font-bold py-4 rounded-2xl shadow-lg 
-        hover:shadow-blue-500/25 transition-all duration-200
-        flex items-center justify-center space-x-2 group"
-    >
-      <span className="text-lg">Enroll Now</span>
-      <FiArrowRight className="text-lg group-hover:translate-x-1 transition-transform duration-200" />
-    </motion.button>
-  </div>
-</motion.div>
+  
+    {/* Content Section */}
+    <div className="p-6 space-y-6">
+      
+      {/* Category */}
+      <div className="flex flex-wrap gap-2">
+        <span className="px-4 py-1.5 bg-gradient-to-r from-blue-50 to-indigo-50 
+          text-blue-700 rounded-xl text-sm font-medium border border-blue-100/80
+          hover:shadow-md transition-shadow duration-200">
+          {course.category}
+        </span>
+      </div>
+  
+      {/* Description */}
+      <div className="bg-gradient-to-r from-gray-50 to-white p-4 rounded-2xl border border-gray-100">
+        <p className="text-gray-600 text-sm leading-relaxed">
+          {course.description}
+        </p>
+      </div>
+  
+      {/* What you will learn */}
+      <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100">
+        <h4 className="text-md font-semibold mb-2 text-gray-800">What you will learn:</h4>
+        <p className="text-gray-600 text-sm">{course.whatYouWillLearn}</p>
+      </div>
+  
+      {/* Requirements */}
+      <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100">
+        <h4 className="text-md font-semibold mb-2 text-gray-800">Requirements:</h4>
+        <p className="text-gray-600 text-sm">{course.requirements}</p>
+      </div>
+  
+      {/* Enroll Button */}
+      <motion.button
+        whileHover={{ scale: 1.02, y: -2 }}
+        whileTap={{ scale: 0.98 }}
+        className="w-full bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-800 
+          hover:from-blue-700 hover:via-blue-800 hover:to-indigo-900 
+          text-white font-bold py-4 rounded-2xl shadow-lg 
+          hover:shadow-blue-500/25 transition-all duration-200
+          flex items-center justify-center space-x-2 group"
+      >
+        <span className="text-lg">Enroll Now</span>
+        <FiArrowRight className="text-lg group-hover:translate-x-1 transition-transform duration-200" />
+      </motion.button>
+  
+    </div>
+  </motion.div>
+  ))}
+  </>
 )
+}
+  
 const resetFilters = () => {
     setFilters({
       search: "",
@@ -1199,7 +1165,7 @@ const Courses = () => {
   });
 
   // Filter courses based on search criteria
-  const filteredCourses = courses.filter(course => {
+  const filteredCourses = course.filter(course => {
     return (
       (filters.search === "" || 
         course.name.toLowerCase().includes(filters.search.toLowerCase()) ||
@@ -1218,9 +1184,9 @@ const Courses = () => {
         <SearchFilters filters={filters} setFilters={setFilters} />
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredCourses.map(course => (
+          
             <CourseCard key={course.id} course={course} />
-          ))}
+        
         </div>
 
         {filteredCourses.length === 0 && (

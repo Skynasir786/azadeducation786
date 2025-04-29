@@ -44,9 +44,9 @@ const courseSchema = new mongoose.Schema(
         type: String,
       },
     ],
-    uploadedBy: {
-      type: Schema.Types.ObjectId,
-      ref: "User", // User ka reference (teacher)
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User', // Assuming you have a User model for user references
       required: true,
     },
     isApproved: {

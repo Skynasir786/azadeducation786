@@ -9,8 +9,8 @@ import jwt from "jsonwebtoken"
 
 
 const logouting = asynchandler(async(req,res,next)=>{
-const token = req.cookies.accesstoken
-console.log("tokenjjj",token)
+    const token = req.cookies.accessToken
+
 if (!token) {
     throw new apierror(400,"something went wrong")
 }

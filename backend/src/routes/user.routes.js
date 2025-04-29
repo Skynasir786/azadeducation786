@@ -3,7 +3,7 @@ import { Router } from 'express'
 import { registerUser,loginuser,logout,getApprovedUsers, approveUser,rreshtokens, changepassword, currentuser, changeuser, updatedavtar, updatedcoverimage, subscribtionbased, calwatchhistory,getAllUsers } from '../controllers/usser.controller.js'
 import {upload} from '../middlewares/multer.middleware.js'
 import { logouting } from '../middlewares/auth.middleware.js'
-
+import { createCourse,getAllCourses } from '../controllers/courses.controller.js'
 const router = Router()
 router.route("/register").post(
     upload.fields([
@@ -28,5 +28,6 @@ router.route("/history").get(logouting,calwatchhistory)
 router.route("/getalluser").get(getAllUsers)
 router.route("/approve").post( approveUser)
 router.route("/getallapproved").get( getApprovedUsers )
-
+router.route("/createcourse").post(upload.fields([{name:"thumbnail",maxCount:1}]),createCourse)
+router.route("/getcourse").get(getAllCourses)
 export{router}

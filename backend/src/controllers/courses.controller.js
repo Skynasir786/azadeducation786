@@ -1,4 +1,6 @@
-import { Course } from "../models/courses.model";
+import { Course } from "../models/courses.model.js";
+import { uploadoncloudinary } from "../utils/cloudinary.js"; // ✅ Import cloudinary uploader
+
 // Create a new course
 export const createCourse = async (req, res) => {
   try {
@@ -6,25 +8,38 @@ export const createCourse = async (req, res) => {
       title,
       description,
       category,
-      thumbnail,
       price,
       level,
       language,
       whatYouWillLearn,
       requirements,
+      userId,
     } = req.body;
+
+    let thumbnail = "";
+
+    // Check if thumbnail is provided and handle Cloudinary upload
+    if (req.files?.thumbnail && req.files.thumbnail.length > 0) {
+      try {
+        const uploadedFile = await uploadoncloudinary(req.files.thumbnail[0].path);
+        thumbnail = uploadedFile?.url || "";
+      } catch (uploadError) {
+        console.error("Cloudinary upload error:", uploadError);
+        return res.status(500).json({ success: false, message: "Thumbnail upload failed" });
+      }
+    }
 
     const newCourse = await Course.create({
       title,
       description,
       category,
-      thumbnail,
+      thumbnail, // Save the Cloudinary URL
       price,
       level,
       language,
       whatYouWillLearn,
       requirements,
-      uploadedBy: req.user._id, // Assuming user is authenticated
+     userId,
     });
 
     res.status(201).json({
@@ -33,14 +48,16 @@ export const createCourse = async (req, res) => {
       course: newCourse,
     });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
 
+
 // Get all courses
 export const getAllCourses = async (req, res) => {
   try {
-    const courses = await Course.find().populate("uploadedBy", "fullName email");
+    const courses = await Course.find().populate("userId", "fullName email");
     res.status(200).json({ success: true, courses });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -106,3 +123,4 @@ export const deleteCourse = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+

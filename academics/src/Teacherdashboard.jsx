@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import axios from "axios"; // Upar import kar lena
+
 import {Link} from "react-router-dom"
 import { 
   FiUsers, 
@@ -78,6 +80,25 @@ const TeacherDashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [user, setUser] = useState(null);
+  const [isOpen, setIsOpen] = useState(false);
+  const [thumbnailPreview, setThumbnailPreview] = useState(""); // For preview
+
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    category: "",
+    thumbnail: "",
+    price: "",
+    level: "",
+    language: "",
+    whatYouWillLearn: "",
+    requirements: "",
+  });
+  
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     console.log(storedUser)
@@ -85,6 +106,65 @@ const TeacherDashboard = () => {
       setUser(JSON.parse(storedUser));
     }
   }, []);
+  const userId = localStorage.getItem("userId");
+  console.log(userId)
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setThumbnailPreview(URL.createObjectURL(file)); // Set preview image
+      // Save file locally to upload later with form submission
+      setFormData((prevData) => ({
+        ...prevData,
+        thumbnail: file, // Store the file object for later upload
+      }));
+    }
+  };
+  
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+  
+    const formDataToSubmit = new FormData();
+    
+    // Append all form data except the thumbnail
+    for (const key in formData) {
+      if (key !== "thumbnail") {
+        formDataToSubmit.append(key, formData[key]);
+      }
+    }
+    
+    // Append the thumbnail file
+    if (formData.thumbnail) {
+      formDataToSubmit.append("thumbnail", formData.thumbnail);
+    }
+  
+    // Append the userId (or any other extra data)
+    formDataToSubmit.append("userId", userId);
+  
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/users/createcourse",
+        formDataToSubmit, // Send the FormData
+        userId,
+        {
+          withCredentials: true,
+          headers: {
+            "Content-Type": "multipart/form-data", // Ensure the correct header for file upload
+          },
+        }
+      );
+  
+      console.log("Course created:", response.data.course);
+      alert("Course created successfully!");
+      setIsOpen(false);
+  
+    } catch (error) {
+      console.error("Error submitting form:", error.response?.data?.message || error.message);
+      alert("Failed to create course: " + (error.response?.data?.message || "Unknown error"));
+    }
+  };
+  
+
 
   const [stats, setStats] = useState({
     totalStudents: 0,
@@ -141,92 +221,22 @@ const TeacherDashboard = () => {
     document.body.classList.toggle('dark-mode');
   };
   // Add this in your state declarations
-const [courses, setCourses] = useState([
-    {
-      id: 1,
-      title: "Advanced Web Development with React & Node.js",
-      category: "Development",
-      price: 149.99,
-      students: 856,
-      status: "Active",
-      progress: 100,
-      thumbnail: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=800&auto=format&fit=crop&q=60",
-      description: "Master full-stack development with React.js and Node.js. Build real-world projects and deploy them.",
-      lastUpdated: "2025-03-10",
-      duration: "20 hours",
-      rating: 4.9
-    },
-    {
-      id: 2,
-      title: "Artificial Intelligence & Machine Learning Fundamentals",
-      category: "Development",
-      price: 199.99,
-      students: 645,
-      status: "Active",
-      progress: 85,
-      thumbnail: "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&auto=format&fit=crop&q=60",
-      description: "Learn the basics of AI & ML. Includes Python programming, TensorFlow, and real-world applications.",
-      lastUpdated: "2025-03-01",
-      duration: "25 hours",
-      rating: 4.8
-    },
-    {
-      id: 3,
-      title: "UI/UX Design Masterclass",
-      category: "Design",
-      price: 129.99,
-      students: 478,
-      status: "Draft",
-      progress: 60,
-      thumbnail: "https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?w=800&auto=format&fit=crop&q=60",
-      description: "Master modern UI/UX design principles. Create stunning interfaces with Figma and Adobe XD.",
-      lastUpdated: "2025-02-15",
-      duration: "18 hours",
-      rating: 4.7
-    },
-    {
-      id: 4,
-      title: "Mobile App Development with Flutter",
-      category: "Development",
-      price: 179.99,
-      students: 392,
-      status: "Active",
-      progress: 95,
-      thumbnail: "https://images.unsplash.com/photo-1551650975-87deedd944c3?w=800&auto=format&fit=crop&q=60",
-      description: "Build beautiful native mobile apps for iOS and Android using Flutter framework.",
-      lastUpdated: "2025-03-05",
-      duration: "22 hours",
-      rating: 4.9
-    },
-    {
-      id: 5,
-      title: "Digital Marketing Strategies 2025",
-      category: "Marketing",
-      price: 89.99,
-      students: 523,
-      status: "Active",
-      progress: 75,
-      thumbnail: "https://images.unsplash.com/photo-1432888498266-38ffec3eaf0a?w=800&auto=format&fit=crop&q=60",
-      description: "Learn latest digital marketing strategies including SEO, SEM, Social Media Marketing, and Analytics.",
-      lastUpdated: "2025-02-28",
-      duration: "15 hours",
-      rating: 4.6
-    },
-    {
-      id: 6,
-      title: "Blockchain Development & Cryptocurrency",
-      category: "Development",
-      price: 199.99,
-      students: 267,
-      status: "Draft",
-      progress: 40,
-      thumbnail: "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=800&auto=format&fit=crop&q=60",
-      description: "Master blockchain technology. Build DApps and smart contracts using Ethereum and Solidity.",
-      lastUpdated: "2025-03-12",
-      duration: "28 hours",
-      rating: 4.8
-    }
-  ]);
+const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/users/getcourse"); // Replace with your API endpoint
+        setCourses(response.data.courses);
+        console.log(response.data.courses)
+        setLoading(false);
+      } catch (error) {
+        console.error("Failed to fetch courses:", error);
+        setLoading(false);
+      }
+    };
+    fetchCourses();
+  }, []);
 
   return (
     <div className={`dashboard-wrapper ${darkMode ? 'dark-mode' : ''}`}>
@@ -630,10 +640,165 @@ const [courses, setCourses] = useState([
             Manage and track your course content
           </p>
         </div>
-        <button className="group flex items-center text-black gap-2 px-6 py-3 bg-gradient-to-r from-primary-600 to-primary-500  rounded-lg shadow-lg shadow-primary-500/25 hover:-translate-y-1 transition-all duration-300">
-          <FiPlus className="group-hover:rotate-90 transition-transform duration-300" />
-          Create New Course
-        </button>
+       
+        <div className="p-6">
+      {/* Create New Course Button */}
+      <button
+        className="group flex items-center text-white gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full shadow-lg hover:scale-105 transition-all duration-300"
+        onClick={() => setIsOpen(true)}
+      >
+        <FiPlus className="group-hover:rotate-90 transition-transform duration-300" />
+        Create New Course
+      </button>
+
+      {/* Modal */}
+      {isOpen && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-start justify-center z-50 overflow-auto">
+    <div className="absolute top-8 w-full max-w-3xl mx-4 bg-white rounded-3xl p-8 shadow-2xl animate-fadeIn overflow-hidden">
+
+            {/* Close Button */}
+            <button
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-800 text-2xl"
+              onClick={() => setIsOpen(false)}
+            >
+              ✕
+            </button>
+
+            <h2 className="text-3xl font-bold mb-6 text-center text-gradient bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
+              Create New Course
+            </h2>
+
+            <form onSubmit={handleSubmit} className="space-y-5 max-h-[70vh] overflow-y-auto pr-2">
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input
+                  type="text"
+                  name="title"
+                  placeholder="Course Title"
+                  value={formData.title}
+                  onChange={handleChange}
+                  className="w-full border-b-2 focus:border-purple-500 outline-none py-2"
+                  required
+                />
+
+                <input
+                  type="text"
+                  name="category"
+                  placeholder="Category"
+                  value={formData.category}
+                  onChange={handleChange}
+                  className="w-full border-b-2 focus:border-purple-500 outline-none py-2"
+                  required
+                />
+              </div>
+
+              <textarea
+                name="description"
+                placeholder="Course Description"
+                value={formData.description}
+                onChange={handleChange}
+                className="w-full border-b-2 focus:border-purple-500 outline-none py-2"
+                rows="2"
+                required
+              />
+
+<input
+                type="file"
+                name="thumbnail"
+                onChange={handleImageChange}
+                accept="image/*"
+                className="w-full border-b-2 focus:border-purple-500 outline-none py-2"
+                required
+              />
+
+              {/* Thumbnail Preview */}
+              {thumbnailPreview && (
+                <div className="mt-4">
+                  <img
+                    src={thumbnailPreview}
+                    alt="Thumbnail Preview"
+                    className="w-full h-48 object-cover rounded-lg"
+                  />
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input
+                  type="number"
+                  name="price"
+                  placeholder="Price"
+                  value={formData.price}
+                  onChange={handleChange}
+                  className="w-full border-b-2 focus:border-purple-500 outline-none py-2"
+                  required
+                />
+
+                <select
+                  name="level"
+                  value={formData.level}
+                  onChange={handleChange}
+                  className="w-full border-b-2 focus:border-purple-500 outline-none py-2"
+                  required
+                >
+                  <option value="">Select Level</option>
+                  <option value="Beginner">Beginner</option>
+                  <option value="Intermediate">Intermediate</option>
+                  <option value="Advanced">Advanced</option>
+                </select>
+              </div>
+
+              <input
+                type="text"
+                name="language"
+                placeholder="Language"
+                value={formData.language}
+                onChange={handleChange}
+                className="w-full border-b-2 focus:border-purple-500 outline-none py-2"
+                required
+              />
+
+              <textarea
+                name="whatYouWillLearn"
+                placeholder="What You Will Learn (comma separated)"
+                value={formData.whatYouWillLearn}
+                onChange={handleChange}
+                className="w-full border-b-2 focus:border-purple-500 outline-none py-2"
+                rows="2"
+                required
+              />
+
+              <textarea
+                name="requirements"
+                placeholder="Requirements (comma separated)"
+                value={formData.requirements}
+                onChange={handleChange}
+                className="w-full border-b-2 focus:border-purple-500 outline-none py-2"
+                rows="2"
+                required
+              />
+
+              <div className="flex justify-end gap-4 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setIsOpen(false)}
+                  className="px-6 py-2 border rounded-full text-gray-700 hover:bg-gray-100"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full hover:scale-105 transition-all"
+                >
+                  Save
+                </button>
+              </div>
+
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+
       </div>
 
       {/* Filters Section */}
@@ -687,99 +852,89 @@ const [courses, setCourses] = useState([
       </div>
 
       {/* Courses Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {courses.map((course, index) => (
-          <div 
-            key={course.id}
-            className="group bg-white dark:bg-gray-800 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 shadow-lg hover:-translate-y-2 transition-all duration-500 animate-fadeIn"
-            style={{ '--i': index }}
-          >
-            {/* Course Thumbnail */}
-            <div className="relative h-48 overflow-hidden">
-              <img 
-                src={course.thumbnail}
-                alt={course.title}
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-              />
-              
-              {/* Overlay */}
-              <div className="absolute inset-0 bg-black/50 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                <div className="flex gap-4">
-                  {[FiEdit2, FiEye, FiTrash2].map((Icon, i) => (
-                    <button 
-                      key={i}
-                      className="p-3 rounded-full bg-white/10 backdrop-blur-md hover:bg-primary-500 hover:scale-110 transition-all duration-300"
-                    >
-                      <Icon className="text-white" />
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Status Badge */}
-              <span className={`absolute top-4 right-4 px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider ${
-                course.status === 'Published' ? 'bg-green-500' : 
-                course.status === 'Draft' ? 'bg-yellow-500' : 'bg-red-500'
-              } text-white`}>
-                {course.status}
-              </span>
-            </div>
-
-            {/* Course Content */}
-            <div className="p-6 space-y-6">
-              <div>
-                <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  {course.title}
-                </h4>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                  {course.category}
-                </p>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-3 line-clamp-2">
-                  {course.description}
-                </p>
-              </div>
-
-              {/* Stats */}
-              <div className="flex justify-between items-center">
-                {[
-                  { icon: FiUsers, text: `${course.students} Students` },
-                  { icon: FiDollarSign, text: `$${course.price}` },
-                  { icon: FiStar, text: '4.8' }
-                ].map((stat, i) => (
-                  <div key={i} className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                    <stat.icon className="text-primary-500" />
-                    <span className="text-sm">{stat.text}</span>
-                  </div>
-                ))}
-              </div>
-
-              {/* Progress Bar */}
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
-                  <span>Course Progress</span>
-                  <span>{course.progress}%</span>
-                </div>
-                <div className="h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-gradient-to-r from-primary-600 to-primary-400 transition-all duration-500"
-                    style={{ width: `${course.progress}%` }}
-                  />
-                </div>
-              </div>
-
-              {/* Footer Buttons */}
-              <div className="flex gap-4">
-                <button className="flex-1 px-4 py-2 bg-primary-500 text-white rounded-lg hover:-translate-y-1 transition-all duration-300">
-                  Edit Course
-                </button>
-                <button className="flex-1 px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300">
-                  View Analytics
-                </button>
-              </div>
-            </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 p-6">
+  {courses.map((course, index) => (
+    <div 
+      key={index}
+      className="group bg-white dark:bg-gray-800 rounded-xl overflow-hidden border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-xl transition-all duration-300"
+    >
+      {/* Thumbnail */}
+      <div className="relative h-56">
+        <img 
+          src={course.thumbnail}
+          alt={course.title}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+        />
+        
+        {/* Overlay with Level & Price */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent">
+          <div className="absolute bottom-4 left-4 right-4 flex justify-between items-center">
+            <span className="bg-primary-500 text-white text-sm px-3 py-1 rounded-md">
+              {course.level}
+            </span>
+            <span className="bg-white text-gray-900 font-bold text-sm px-3 py-1 rounded-md">
+              {course.price}Pkr
+            </span>
           </div>
-        ))}
+        </div>
       </div>
+
+      {/* Content */}
+      <div className="p-5">
+        {/* Category */}
+        <div className="text-primary-500 text-sm font-medium mb-2">
+          {course.category} • {course.language}
+        </div>
+
+        {/* Title */}
+        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-primary-500 transition-colors">
+          {course.title}
+        </h3>
+
+        {/* Description */}
+        <p className="text-gray-600 dark:text-gray-300 text-sm mb-5 line-clamp-2">
+          {course.description}
+        </p>
+
+        {/* What You Will Learn */}
+        {course.whatYouWillLearn && (
+          <div className="mb-6">
+            <h4 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+              <svg className="w-4 h-4 text-primary-500" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z"/>
+              </svg>
+              What you'll learn
+            </h4>
+            <ul className="space-y-2">
+              {Array.isArray(course.whatYouWillLearn) 
+                ? course.whatYouWillLearn.slice(0, 3).map((item, i) => (
+                    <li key={i} className="flex gap-2 text-sm text-gray-600 dark:text-gray-300">
+                      <svg className="w-5 h-5 text-green-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>{item}</span>
+                    </li>
+                  ))
+                : <li className="text-gray-600 dark:text-gray-400">{course.whatYouWillLearn}</li>
+              }
+            </ul>
+          </div>
+        )}
+
+        {/* Buttons */}
+        <div className="flex gap-3">
+          <button className="flex-1 bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+            Edit Course
+          </button>
+          <button className="flex-1 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg font-medium transition-colors">
+            View Details
+          </button>
+        </div>
+      </div>
+    </div>
+  ))}
+</div>
+
 
       {/* Pagination */}
       <div className="flex justify-center items-center gap-6 mt-12">

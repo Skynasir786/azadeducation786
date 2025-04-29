@@ -19,12 +19,19 @@ const LoginPage = () => {
       const response = await axios.post(
         "http://localhost:5000/users/login", // ✅ API URL fixed
         values,
+        {         
+           withCredentials: true,
+        }
         // { withCredentials: true } // ✅ Credentials enabled
       );
       localStorage.setItem("user", JSON.stringify(response.data.data.user));
+      const userId = response.data.data.user._id;
+      console.log(userId)
+      localStorage.setItem("userId", userId);
 
       console.log("User logged in:", response.data);
-
+      const data = response.data;
+      localStorage.setItem("token", data.token);
       navigate("/"); // ✅ Redirect to home after successful login
     } catch (error) {
       setError(error.response?.data?.message || "Login failed. Please try again.");
