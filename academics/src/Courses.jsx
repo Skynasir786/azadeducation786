@@ -8,6 +8,7 @@ import { BsLightningCharge, BsStars,BsPeopleFill, BsBookFill, } from "react-icon
 import { IoSchoolOutline } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
 import axios from "axios"
+import {Link} from "react-router-dom"
 // Constantimport { useNavigate } from "react-router-dom";
 
 const CURRENT_USER = "huzaifa8883";
@@ -25,15 +26,53 @@ const getLevelColor = (level) => {
   const currentUser = "huzaifa8883";
   const filterOptions = {
     category: [
-      { value: "", label: "All Categories" },
-      { value: "Programming", label: "Programming" },
-      { value: "Data Science", label: "Data Science" },
-      { value: "Design", label: "Design" },
-      { value: "Business", label: "Business" },
-      { value: "Marketing", label: "Marketing" },
-      { value: "Photography", label: "Photography" },
-      { value: "Music", label: "Music" }
+      // 1. Academic Courses (School & College)
+      { value: "Matric & Intermediate", label: "Matric & Intermediate (Science, Arts, Commerce)" },
+      { value: "O-Level & A-Level", label: "O-Level & A-Level (Cambridge & Federal Board)" },
+      { value: "Engineering Entrance Exams", label: "Engineering Entrance Exams (ECAT, NUST, PIEAS, GIKI)" },
+      { value: "Medical Entrance Exams", label: "Medical Entrance Exams (MDCAT, NUMS, AKU)" },
+      { value: "CSS & FPSC Preparation", label: "CSS & FPSC Preparation" },
+      { value: "Bachelors & Masters", label: "Bachelors & Masters (BS, MS, MBA, MPhil, PhD)" },
+    
+      // 2. Professional & Skill-Based Courses
+      { value: "Freelancing", label: "Freelancing (Fiverr, Upwork, PeoplePerHour)" },
+      { value: "Graphic Designing", label: "Graphic Designing (Photoshop, Illustrator, Canva)" },
+      { value: "Digital Marketing", label: "Digital Marketing (SEO, FB Ads, Google Ads, SMM)" },
+      { value: "E-commerce", label: "E-commerce (Daraz, Amazon, Shopify, eBay, Etsy)" },
+      { value: "Web Development", label: "Web Development (HTML, CSS, JS, React, Laravel, WP)" },
+      { value: "App Development", label: "App Development (Flutter, React Native, Android, iOS)" },
+      { value: "Cyber Security", label: "Cyber Security & Ethical Hacking" },
+      { value: "Data Science & AI", label: "Data Science & AI (Python, ML, DL, ChatGPT Tools)" },
+    
+      // 3. Language & Communication Courses
+      { value: "English Language", label: "English Language (IELTS, TOEFL, Spoken)" },
+      { value: "Urdu & Pashto Writing", label: "Urdu & Pashto Writing" },
+      { value: "Foreign Languages", label: "Chinese, German, French Language Courses" },
+    
+      // 4. Government & Competitive Exam Preparation
+      { value: "Government Exams", label: "CSS, PMS, FPSC, PPSC, SPSC, KPPSC, BPSC" },
+      { value: "Military Test Prep", label: "Pak Army, Navy, Air Force (ISSB, Initial Tests)" },
+      { value: "Police & Agencies Prep", label: "Police, FIA, ASF, NAB Exam Preparation" },
+      { value: "University Entry Tests", label: "LUMS, IBA, FAST, GIKI Entry Tests" },
+    
+      // 5. Business & Finance
+      { value: "Accounting & Finance", label: "Accounting & Finance (QuickBooks, Excel, Tally, SAP)" },
+      { value: "Stock & Crypto Trading", label: "Stock Market & Crypto Trading" },
+      { value: "Entrepreneurship", label: "Entrepreneurship & Business Startup Guide" },
+    
+      // 6. Personal Development
+      { value: "Time Management", label: "Time Management & Productivity" },
+      { value: "Public Speaking", label: "Public Speaking & Communication Skills" },
+      { value: "Leadership", label: "Leadership & Team Management" },
+      { value: "Career Counseling", label: "Career Counseling & Job Interview Preparation" },
+    
+      // 7. Islamic & Religious Studies
+      { value: "Quran & Tajweed", label: "Quran Tafseer & Tajweed" },
+      { value: "Hadith & Fiqh", label: "Hadith & Fiqh Courses" },
+      { value: "Islamic Finance", label: "Islamic Banking & Finance" }
     ],
+    
+    
     level: [
       { value: "", label: "All Levels" },
       { value: "Beginner", label: "Beginner" },
@@ -312,10 +351,8 @@ const Navbar = () => {
         const response = await axios.get("http://localhost:5000/users/getcourse"); // Replace with your API endpoint
         setCourses(response.data.courses);
         console.log(response.data.courses)
-        setLoading(false);
       } catch (error) {
         console.error("Failed to fetch courses:", error);
-        setLoading(false);
       }
     };
     fetchCourses();
@@ -895,7 +932,9 @@ const CourseCard = () => {
           hover:shadow-blue-500/25 transition-all duration-200
           flex items-center justify-center space-x-2 group"
       >
-        <span className="text-lg">Enroll Now</span>
+        <Link to={`/courses/${course._id}`}>
+  <span className="text-lg text-blue-600 hover:underline">Enroll Now</span>
+</Link>
         <FiArrowRight className="text-lg group-hover:translate-x-1 transition-transform duration-200" />
       </motion.button>
   

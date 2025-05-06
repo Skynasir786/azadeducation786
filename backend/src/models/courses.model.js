@@ -57,6 +57,26 @@ const courseSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
+    courseType: {
+      type: String,
+      enum: ["Video", "Online", "InPerson"],
+      required: true,
+    },
+    videoFile: {
+      type: String, // File URL
+    },
+    classTime: {
+      type: String, // Example: "6 PM to 7 PM"
+    },
+    classDaysPerWeek: {
+      type: String, // Example: "3 days/week"
+    },
+    courseDuration: {
+      type: String, // Example: "2 months"
+    },
+    inPersonDetails: {
+      type: String, // e.g., "Classes will be held at ABC Academy, Lahore"
+    },
   },
   { timestamps: true }
 );

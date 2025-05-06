@@ -14,20 +14,30 @@ export const createCourse = async (req, res) => {
       whatYouWillLearn,
       requirements,
       userId,
+      courseType,
+   
+      classTime,
+      classDaysPerWeek,
+      courseDuration,
+      inPersonDetails,
     } = req.body;
 
     let thumbnail = "";
+    let videoFile = "";
+
 
     // Check if thumbnail is provided and handle Cloudinary upload
-    if (req.files?.thumbnail && req.files.thumbnail.length > 0) {
-      try {
-        const uploadedFile = await uploadoncloudinary(req.files.thumbnail[0].path);
-        thumbnail = uploadedFile?.url || "";
-      } catch (uploadError) {
-        console.error("Cloudinary upload error:", uploadError);
-        return res.status(500).json({ success: false, message: "Thumbnail upload failed" });
-      }
+    if (req.files?.thumbnail?.[0]) {
+      const uploadedThumbnail = await uploadoncloudinary(req.files.thumbnail[0].path);
+      thumbnail = uploadedThumbnail?.secure_url || "";
     }
+    
+    // Upload video file
+    if (req.files?.videoFile?.[0]) {
+      const uploadedVideo = await uploadoncloudinary(req.files.videoFile[0].path);
+      videoFile = uploadedVideo?.secure_url || "";
+    }
+    
 
     const newCourse = await Course.create({
       title,
@@ -40,6 +50,12 @@ export const createCourse = async (req, res) => {
       whatYouWillLearn,
       requirements,
      userId,
+     courseType,
+     videoFile,
+     classTime,
+     classDaysPerWeek,
+     courseDuration,
+     inPersonDetails
     });
 
     res.status(201).json({
@@ -68,7 +84,7 @@ export const getAllCourses = async (req, res) => {
 export const getSingleCourse = async (req, res) => {
   try {
     const { id } = req.params;
-    const course = await Course.findById(id).populate("uploadedBy", "fullName email");
+    const course = await Course.findById(id).populate("userId", "fullName email");
 
     if (!course) {
       return res.status(404).json({ success: false, message: "Course not found" });

@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect ,useRef} from 'react';
 import axios from "axios"; // Upar import kar lena
-
+import { io } from 'socket.io-client';
 import {Link} from "react-router-dom"
+
 import { 
   FiUsers, 
   FiBookOpen, 
@@ -82,7 +83,20 @@ const TeacherDashboard = () => {
   const [user, setUser] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
   const [thumbnailPreview, setThumbnailPreview] = useState(""); // For preview
+  const [messages, setMessages] = useState([]);
+  const [message, setMessage] = useState('');
+  const [socket, setSocket] = useState(null);
+  const [unreadMessages, setUnreadMessages] = useState({});
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const fileInputRef = useRef(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [selectedStudentId, setSelectedStudentId] = useState(null);
+  const [students, setStudents] = useState([]);
+  const [newMessage, setNewMessage] = useState('');
 
+  const socketRef = useRef(null);  // To hold the socket reference
+  const studentsRef = useRef(students);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -93,6 +107,13 @@ const TeacherDashboard = () => {
     language: "",
     whatYouWillLearn: "",
     requirements: "",
+    courseType: "", // Video, Online, InPerson
+    videoFile: null,
+    classTime: "",
+    classDaysPerWeek: "",
+    courseDuration: "",
+    inPersonDetails: "",
+    userId:""
   });
   
   const handleChange = (e) => {
@@ -100,15 +121,44 @@ const TeacherDashboard = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
   useEffect(() => {
+    const storedUserId = localStorage.getItem("userId");
+    console.log("Stored userId from localStorage:", storedUserId);
+    if (storedUserId) {
+      setFormData((prevData) => ({ ...prevData, userId: storedUserId }));
+    }
+
     const storedUser = localStorage.getItem("user");
-    console.log(storedUser)
     if (storedUser) {
       setUser(JSON.parse(storedUser));
     }
   }, []);
-  const userId = localStorage.getItem("userId");
-  console.log(userId)
-
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // File size validation (5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('File size should not exceed 5MB');
+        return;
+      }
+      setSelectedFile(file);
+  
+      // Show file preview if it's an image
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setPreviewUrl(reader.result);
+        };
+        reader.onerror = () => {
+          console.error('Error reading file');
+          setPreviewUrl(null);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        setPreviewUrl(null);
+      }
+    }
+  };
+  
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -121,43 +171,47 @@ const TeacherDashboard = () => {
     }
   };
   
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
   
+    // ⛔ Don't rely on formData.userId
+    const storedUserId = localStorage.getItem("userId");
+    if (!storedUserId) {
+      alert("User ID not found! Please log in first.");
+      return;
+    }
+  
     const formDataToSubmit = new FormData();
-    
-    // Append all form data except the thumbnail
+  
+    // Append all fields except thumbnail and userId
     for (const key in formData) {
-      if (key !== "thumbnail") {
+      if (key !== "thumbnail" && key !== "userId") {
         formDataToSubmit.append(key, formData[key]);
       }
     }
-    
-    // Append the thumbnail file
+  
+    // Append thumbnail
     if (formData.thumbnail) {
       formDataToSubmit.append("thumbnail", formData.thumbnail);
     }
   
-    // Append the userId (or any other extra data)
-    formDataToSubmit.append("userId", userId);
+    // ✅ Append userId directly from localStorage
+    formDataToSubmit.append("userId", storedUserId);
   
     try {
       const response = await axios.post(
         "http://localhost:5000/users/createcourse",
-        formDataToSubmit, // Send the FormData
-        userId,
+        formDataToSubmit,
         {
           withCredentials: true,
           headers: {
-            "Content-Type": "multipart/form-data", // Ensure the correct header for file upload
+            "Content-Type": "multipart/form-data",
           },
         }
       );
-  
       console.log("Course created:", response.data.course);
       alert("Course created successfully!");
-      setIsOpen(false);
-  
     } catch (error) {
       console.error("Error submitting form:", error.response?.data?.message || error.message);
       alert("Failed to create course: " + (error.response?.data?.message || "Unknown error"));
@@ -165,7 +219,131 @@ const TeacherDashboard = () => {
   };
   
 
+  useEffect(() => {
+    const userId = localStorage.getItem('userId');
+    if (!userId) return;
+  
+    // Fetch all approved users
+    const fetchUsers = async () => {
+      try {
+        const res = await fetch('http://localhost:5000/users/getallapproved');
+        const data = await res.json();
+        console.log("Fetched students:", data);
+  
+        if (Array.isArray(data.data)) {
+          setStudents(data.data);
+          studentsRef.current = data.data;
+        } else {
+          console.error("Fetched data is not an array", data);
+        }
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      }
+    };
+  
+    fetchUsers();
+  
+    // Initialize socket connection if not already created
+    if (!socketRef.current) {
+      const newSocket = io('http://localhost:5000', {
+        withCredentials: true,
+      });
+  
+      socketRef.current = newSocket;
+  
+      // 🔐 Register user with backend
+      newSocket.emit('register', userId);
+  
+      // 📩 Handle incoming message
+      const handleMessage = (message) => {
+        const isFromCurrent = selectedStudentId === message.senderId;
+  
+        if (!isFromCurrent) {
+          setUnreadMessages((prev) => ({
+            ...prev,
+            [message.senderId]: (prev[message.senderId] || 0) + 1,
+          }));
+        }
+  
+        setMessages((prev) => [...prev, message]);
+      };
+  
+      newSocket.on('receiveMessage', handleMessage);
+  
+      // Cleanup on unmount
+      return () => {
+        newSocket.off('receiveMessage', handleMessage);
+        newSocket.close();
+        socketRef.current = null;
+      };
+    }
+  
+    return () => {
+      socketRef.current?.off('receiveMessage');
+    };
+  }, [selectedStudentId]);
+  
+  // Handle student selection and reset unread messages count
+  const handleSelectStudent = (id) => {
+    setSelectedStudentId(id);
+    setUnreadMessages((prev) => ({
+      ...prev,
+      [id]: 0,
+    }));
+  };
 
+  // Function to send message
+  const sendMessage = async () => {
+    if ((!newMessage.trim() && !selectedFile) || !selectedStudentId || !socketRef.current) return;
+  
+    let fileUrl = '';
+    let fileName = '';
+    let fileType = '';
+  
+    if (selectedFile) {
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+  
+      try {
+        setUploadProgress(0);
+        const response = await fetch("http://localhost:5000/users/file", {
+          method: "POST",
+          body: formData,
+        });
+  
+        const data = await response.json();
+        fileUrl = data.fileUrl || "";
+        fileName = selectedFile.name;
+        fileType = selectedFile.type;
+        setUploadProgress(100);
+        
+        setTimeout(() => {
+          setUploadProgress(0);
+        }, 500);
+      } catch (error) {
+        console.error("File upload failed:", error);
+        setUploadProgress(0);
+        return;
+      }
+    }
+  
+    const messageObj = {
+      senderId: localStorage.getItem('userId'),
+      receiverId: selectedStudentId,
+      message: newMessage.trim(),
+      fileUrl,
+      fileName,
+      fileType,
+      timestamp: new Date().toISOString(),
+    };
+  
+    socketRef.current.emit('sendMessage', messageObj);
+    setNewMessage('');
+    setSelectedFile(null);
+    setPreviewUrl(null);
+  };
+  
+  
   const [stats, setStats] = useState({
     totalStudents: 0,
     totalCourses: 0,
@@ -296,7 +474,9 @@ const [courses, setCourses] = useState([]);
            { icon: FiUsers, label: 'Students', id: 'students', gradient: 'from-violet-500 to-purple-500' },
            { icon: FiPlay, label: 'Live Sessions', id: 'live-sessions', gradient: 'from-pink-500 to-rose-500' },
            { icon: FiDollarSign, label: 'Revenue', id: 'revenue', gradient: 'from-amber-500 to-orange-500' },
-           { icon: FiSettings, label: 'Settings', id: 'settings', gradient: 'from-gray-500 to-slate-500' }
+           { icon: FiSettings, label: 'Settings', id: 'settings', gradient: 'from-gray-500 to-slate-500' },
+           { icon: FiMessageSquare, label: 'Messages', id: 'messenger', gradient: 'from-gray-500 to-slate-500' }
+
          ].map(({ icon: Icon, label, id, gradient }) => (
            <button
              key={id}
@@ -681,15 +861,68 @@ const [courses, setCourses] = useState([]);
                   required
                 />
 
-                <input
-                  type="text"
-                  name="category"
-                  placeholder="Category"
-                  value={formData.category}
-                  onChange={handleChange}
-                  className="w-full border-b-2 focus:border-purple-500 outline-none py-2"
-                  required
-                />
+<select
+  name="category"
+  value={formData.category}
+  onChange={handleChange}
+  className="w-full border-b-2 focus:border-purple-500 outline-none py-2"
+  required
+>
+  <option value="">Select Category</option>
+
+  <optgroup label="Academic Courses (School & College)">
+    <option value="Matric & Intermediate">Matric & Intermediate (Science, Arts, Commerce)</option>
+    <option value="O-Level & A-Level">O-Level & A-Level (Cambridge & Federal Board)</option>
+    <option value="Engineering Entrance Exams">Engineering Entrance Exams (ECAT, NUST, PIEAS, GIKI)</option>
+    <option value="Medical Entrance Exams">Medical Entrance Exams (MDCAT, NUMS, AKU)</option>
+    <option value="CSS & FPSC Preparation">CSS & FPSC Preparation</option>
+    <option value="Bachelors & Masters">Bachelors & Masters (BS, MS, MBA, MPhil, PhD)</option>
+  </optgroup>
+
+  <optgroup label="Professional & Skill-Based Courses">
+    <option value="Freelancing">Freelancing (Fiverr, Upwork, PeoplePerHour)</option>
+    <option value="Graphic Designing">Graphic Designing (Photoshop, Illustrator, Canva)</option>
+    <option value="Digital Marketing">Digital Marketing (SEO, Facebook Ads, Google Ads, SMM)</option>
+    <option value="E-commerce">E-commerce (Daraz, Amazon, Shopify, eBay, Etsy)</option>
+    <option value="Web Development">Web Development (HTML, CSS, JS, React, WordPress, etc.)</option>
+    <option value="App Development">App Development (Flutter, React Native, Android, iOS)</option>
+    <option value="Cyber Security">Cyber Security & Ethical Hacking</option>
+    <option value="Data Science & AI">Data Science & AI (Python, ML, DL, ChatGPT Tools)</option>
+  </optgroup>
+
+  <optgroup label="Language & Communication Courses">
+    <option value="English Language">English Language (IELTS, TOEFL, Spoken English)</option>
+    <option value="Urdu & Pashto Writing">Urdu & Pashto Writing</option>
+    <option value="Foreign Languages">Chinese, German, French Language Courses</option>
+  </optgroup>
+
+  <optgroup label="Govt. & Competitive Exam Prep">
+    <option value="Competitive Exams">CSS, PMS, FPSC, PPSC, SPSC, KPPSC, BPSC</option>
+    <option value="Armed Forces Tests">Pak Army, Navy, Air Force Tests (ISSB, Initial Tests)</option>
+    <option value="Police & FIA Exams">Police, FIA, ASF, NAB Exam Preparation</option>
+    <option value="University Entry Tests">LUMS, IBA, FAST, GIKI Entry Tests</option>
+  </optgroup>
+
+  <optgroup label="Business & Finance">
+    <option value="Accounting & Finance">Accounting & Finance (QuickBooks, Excel, SAP)</option>
+    <option value="Trading">Stock Market & Crypto Trading</option>
+    <option value="Entrepreneurship">Entrepreneurship & Business Startup Guide</option>
+  </optgroup>
+
+  <optgroup label="Personal Development">
+    <option value="Time Management">Time Management & Productivity</option>
+    <option value="Public Speaking">Public Speaking & Communication Skills</option>
+    <option value="Leadership">Leadership & Team Management</option>
+    <option value="Career Counseling">Career Counseling & Job Interview Prep</option>
+  </optgroup>
+
+  <optgroup label="Islamic & Religious Studies">
+    <option value="Quran & Tajweed">Quran Tafseer & Tajweed</option>
+    <option value="Hadith & Fiqh">Hadith & Fiqh Courses</option>
+    <option value="Islamic Banking">Islamic Banking & Finance</option>
+  </optgroup>
+</select>
+
               </div>
 
               <textarea
@@ -756,6 +989,75 @@ const [courses, setCourses] = useState([]);
                 className="w-full border-b-2 focus:border-purple-500 outline-none py-2"
                 required
               />
+              <select
+  name="courseType"
+  value={formData.courseType}
+  onChange={handleChange}
+  className="w-full border-b-2 focus:border-purple-500 outline-none py-2"
+  required
+>
+  <option value="">Select Course Type</option>
+  <option value="Video">Video Course</option>
+  <option value="Online">Online (Zoom)</option>
+  <option value="InPerson">In-Person</option>
+</select>
+
+{/* Conditional Fields Based on Course Type */}
+{formData.courseType === "Video" && (
+  <div>
+    <label className="block mt-4">Upload Video File:</label>
+    <input
+      type="file"
+      name="videoFile"
+      onChange={(e) =>
+        setFormData({ ...formData, videoFile: e.target.files[0] })
+      }
+      accept="video/*"
+      className="w-full border-b-2 focus:border-purple-500 outline-none py-2"
+    />
+  </div>
+)}
+
+{formData.courseType === "Online" && (
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+    <input
+      type="text"
+      name="classTime"
+      placeholder="Class Time (e.g. 7PM - 8PM)"
+      value={formData.classTime}
+      onChange={handleChange}
+      className="w-full border-b-2 focus:border-purple-500 outline-none py-2"
+    />
+    <input
+      type="number"
+      name="classDaysPerWeek"
+      placeholder="Classes per Week"
+      value={formData.classDaysPerWeek}
+      onChange={handleChange}
+      className="w-full border-b-2 focus:border-purple-500 outline-none py-2"
+    />
+    <input
+      type="text"
+      name="courseDuration"
+      placeholder="Course Duration (e.g. 2 months)"
+      value={formData.courseDuration}
+      onChange={handleChange}
+      className="w-full border-b-2 focus:border-purple-500 outline-none py-2"
+    />
+  </div>
+)}
+
+{formData.courseType === "InPerson" && (
+  <textarea
+    name="inPersonDetails"
+    placeholder="Please describe your location and timing preference"
+    value={formData.inPersonDetails}
+    onChange={handleChange}
+    className="w-full border-b-2 focus:border-purple-500 outline-none py-2 mt-4"
+    rows="2"
+  />
+)}
+
 
               <textarea
                 name="whatYouWillLearn"
@@ -1605,6 +1907,276 @@ const [courses, setCourses] = useState([]);
     </div>
   </main>
 )}
+{currentPage === 'messenger' && (
+  <main className="flex-1 min-h-screen ml-72 bg-gray-50 dark:bg-gray-900">
+    <div className="relative h-screen flex flex-col">
+      {/* Header */}
+      <div className="bg-white dark:bg-gray-800 border-b dark:border-gray-700 px-6 py-4">
+        <div className="flex justify-between items-center max-w-6xl mx-auto">
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Teacher Messenger</h2>
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2">
+              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+              <span className="text-sm text-gray-600 dark:text-gray-300">Online</span>
+            </div>
+            <span className="text-gray-500 dark:text-gray-400 text-sm">
+              {new Date().toLocaleString()}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Chat Container */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Sidebar */}
+        <aside className="w-80 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
+        {students.map((user) => {
+  console.log("User ID:", user._id);
+  messages.forEach((msg) => {
+    console.log("Message senderId:", msg.senderId); // ya msg.userId
+  });
+
+  const userMsgCount =
+  selectedStudentId !== user._id
+    ? messages.filter((msg) => msg.senderId === user._id).length
+    : 0;
+
+  return (
+    <div
+    key={user._id}
+    onClick={() => setSelectedStudentId(user._id)}
+    className={`p-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 ${
+      userMsgCount > 0 ? 'bg-yellow-100 dark:bg-yellow-800' : ''
+    }`}
+  >
+    <div className="flex items-center justify-between">
+      <span className="text-gray-800 dark:text-white font-medium">{user.fullName}</span>
+  
+      {userMsgCount > 0 && (
+        <span className="ml-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
+          {userMsgCount}
+        </span>
+      )}
+    </div>
+    <div className="text-sm text-gray-500 dark:text-gray-400">Status: online</div>
+  </div>
+  
+  );
+})}
+
+</aside>
+
+
+
+        {/* Chat Messages Area */}
+        {selectedStudentId ? (
+          <section className="flex-1 flex flex-col bg-gray-50 dark:bg-gray-900">
+            <div className="flex-1 overflow-y-auto px-6 py-4">
+              <div className="max-w-3xl mx-auto space-y-6">
+                {messages.map((msg, idx) => {
+                  const isOwnMessage = msg.senderId === localStorage.getItem('userId');
+                  return (
+                    <div key={idx} className={`flex items-end space-x-2 ${isOwnMessage ? 'justify-end' : ''}`}>
+                      {!isOwnMessage && (
+                        <div className="flex flex-col items-center space-y-1">
+                          <div className="w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center text-white">
+                            S
+                          </div>
+                          <span className="text-xs text-gray-500">
+                            {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        </div>
+                      )}
+                      <div className={`group relative max-w-md ${isOwnMessage ? 'order-first' : ''}`}>
+                        <div className={`p-4 rounded-2xl ${
+                          isOwnMessage
+                            ? 'bg-indigo-600 text-white'
+                            : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white'
+                        } shadow-sm`}>
+                          {msg.message && <p className="break-words mb-2">{msg.message}</p>}
+                          
+                          {msg.fileUrl && (
+                            <div className="mt-2">
+                              {msg.fileType?.startsWith('image/') ? (
+                                <a 
+                                  href={msg.fileUrl} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className="block"
+                                >
+                                  <div className="relative bg-white dark:bg-gray-600 rounded-lg overflow-hidden">
+                                    <img
+                                      src={msg.fileUrl}
+                                      alt={msg.fileName}
+                                      className="max-w-full w-full h-auto object-cover rounded-lg"
+                                      style={{ maxHeight: '200px' }}
+                                    />
+                                    <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs p-1 truncate">
+                                      {msg.fileName}
+                                    </div>
+                                  </div>
+                                </a>
+                              ) : (
+                                <a
+                                  href={msg.fileUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center space-x-2 p-2 rounded  bg-opacity-20 hover:bg-opacity-30 transition"
+                                >
+                                  <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                  </svg>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="truncate text-sm font-medium">{msg.fileName}</p>
+                                    <p className="text-xs opacity-75">
+  {msg.fileType ? msg.fileType.split('/')[1]?.toUpperCase() : ""}
+</p>
+
+                                  </div>
+                                </a>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                        <span className={`text-xs text-gray-500 mt-1 ${isOwnMessage ? 'text-right' : 'text-left'}`}>
+                          {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Message Input Area */}
+            <div className="border-t dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
+              <div className="max-w-3xl mx-auto">
+                {/* File Preview */}
+                {selectedFile && (
+                  <div className="mb-4 p-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                    {selectedFile.type.startsWith('image/') && previewUrl ? (
+                      <div className="relative">
+                        <div className="relative bg-white dark:bg-gray-600 rounded-lg overflow-hidden">
+                          <img
+                            src={previewUrl}
+                            alt="Preview"
+                            className="max-w-full w-full h-auto object-contain rounded-lg"
+                            style={{ 
+                              maxHeight: '200px',
+                              minHeight: '100px',
+                            }}
+                          />
+                          <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs p-1 truncate">
+                            {selectedFile.name}
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => {
+                            setSelectedFile(null);
+                            setPreviewUrl(null);
+                          }}
+                          className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1.5 hover:bg-red-600 transition-colors shadow-lg"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center">
+                        <svg className="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <span className="ml-2 flex-1 truncate text-gray-600 dark:text-gray-300">{selectedFile.name}</span>
+                        <button
+                          onClick={() => {
+                            setSelectedFile(null);
+                            setPreviewUrl(null);
+                          }}
+                          className="ml-2 text-red-500 hover:text-red-700"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Upload Progress */}
+                {uploadProgress > 0 && (
+                  <div className="mb-4">
+                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                      <div
+                        className="bg-indigo-600 h-2 rounded-full transition-all duration-300"
+                        style={{ width: `${uploadProgress}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex items-end space-x-4">
+                  <div className="flex-1 bg-gray-100 dark:bg-gray-700 rounded-2xl p-2">
+                    <div className="flex items-center">
+                      <input
+                        type="text"
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        placeholder="Type your message..."
+                        className="flex-1 px-3 py-2 bg-transparent text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                        </svg>
+                      </button>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        onChange={handleFileChange}
+                        className="hidden"
+                        accept="image/*,.pdf,.doc,.docx"
+                      />
+                    </div>
+                  </div>
+                  <button
+                    onClick={sendMessage}
+                    disabled={!newMessage.trim() && !selectedFile}
+                    className={`px-6 py-3 ${
+                      !newMessage.trim() && !selectedFile
+                        ? 'bg-gray-400 cursor-not-allowed'
+                        : 'bg-indigo-600 hover:bg-indigo-700'
+                    } text-white font-medium rounded-xl transition-colors duration-200 flex items-center space-x-2`}
+                  >
+                    <span>Send</span>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+        ) : (
+          <section className="flex-1 flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900 text-gray-500 dark:text-gray-400">
+            <div className="w-24 h-24 mb-4 text-gray-300 dark:text-gray-600">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-semibold mb-2">No Conversation Selected</h3>
+            <p className="text-gray-500">Choose a student from the list to start chatting</p>
+          </section>
+        )}
+      </div>
+    </div>
+  </main>
+)}
+
+
 {currentPage === 'revenue' && (
   <main className="flex-1 min-h-screen ml-72 bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-6 transition-all duration-500">
     {/* Decorative Background */}

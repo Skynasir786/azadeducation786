@@ -10,13 +10,52 @@ import {Link} from "react-router-dom"
 import pakistanCities from "./pakistanCities";
 import "slick-carousel/slick/slick-theme.css";
 const categories = [
-  { title: "Mathematics", description: "Master numbers and equations.", icon: "🧮" },
-  { title: "Science", description: "Discover the wonders of the universe.", icon: "🔬" },
-  { title: "Literature", description: "Dive into the world of stories.", icon: "📚" },
-  { title: "History", description: "Explore the past and its impact on the present.", icon: "🏛️" },
-  { title: "Art", description: "Express creativity through various mediums.", icon: "🎨" },
-  { title: "Music", description: "Understand the language of sound.", icon: "🎵" },
+  // 1. Academic Courses (School & College)
+  { title: "Matric & Intermediate", description: "Science, Arts, and Commerce subjects for school & college level.", icon: "🏫" },
+  { title: "O-Level & A-Level", description: "Cambridge & Federal Board curriculum studies.", icon: "📘" },
+  { title: "Engineering Entrance Exams", description: "ECAT, NUST, PIEAS, GIKI preparation.", icon: "🛠️" },
+  { title: "Medical Entrance Exams", description: "MDCAT, NUMS, AKU entrance test prep.", icon: "🩺" },
+  { title: "CSS & FPSC Preparation", description: "Civil services competitive exams prep.", icon: "📋" },
+  { title: "Bachelors & Masters", description: "University-level education for BS, MS, MBA, and more.", icon: "🎓" },
+
+  // 2. Professional & Skill-Based Courses
+  { title: "Freelancing", description: "Learn to earn via Fiverr, Upwork, and others.", icon: "💻" },
+  { title: "Graphic Designing", description: "Master Photoshop, Illustrator, Canva etc.", icon: "🎨" },
+  { title: "Digital Marketing", description: "SEO, Facebook & Google Ads, SMM skills.", icon: "📈" },
+  { title: "E-commerce", description: "Amazon, Daraz, Shopify, and dropshipping.", icon: "🛒" },
+  { title: "Web Development", description: "HTML, CSS, JS, React, Laravel, WordPress.", icon: "🌐" },
+  { title: "App Development", description: "Flutter, React Native, Android & iOS.", icon: "📱" },
+  { title: "Cyber Security", description: "Ethical hacking and online safety.", icon: "🛡️" },
+  { title: "Data Science & AI", description: "Python, Machine Learning, AI tools.", icon: "🤖" },
+
+  // 3. Language & Communication Courses
+  { title: "English Language", description: "IELTS, TOEFL, and spoken English training.", icon: "🗣️" },
+  { title: "Urdu & Pashto Writing", description: "Improve writing skills in native languages.", icon: "✍️" },
+  { title: "Foreign Languages", description: "Learn Chinese, French, German and more.", icon: "🌍" },
+
+  // 4. Government & Competitive Exam Preparation
+  { title: "Government Exams", description: "CSS, PMS, FPSC, PPSC, SPSC and more.", icon: "🏛️" },
+  { title: "Military Test Prep", description: "Preparation for ISSB and military tests.", icon: "🎖️" },
+  { title: "Police & Agencies Prep", description: "FIA, ASF, NAB and other agencies prep.", icon: "🚓" },
+  { title: "University Entry Tests", description: "Entry tests for LUMS, IBA, FAST, GIKI etc.", icon: "🏫" },
+
+  // 5. Business & Finance
+  { title: "Accounting & Finance", description: "QuickBooks, Excel, SAP, and more.", icon: "💰" },
+  { title: "Stock & Crypto Trading", description: "Learn investment and trading strategies.", icon: "📊" },
+  { title: "Entrepreneurship", description: "Start your own business with confidence.", icon: "🚀" },
+
+  // 6. Personal Development
+  { title: "Time Management", description: "Boost productivity and manage time wisely.", icon: "⏰" },
+  { title: "Public Speaking", description: "Master communication and speaking skills.", icon: "🧑‍🎤" },
+  { title: "Leadership", description: "Lead teams and develop leadership qualities.", icon: "👑" },
+  { title: "Career Counseling", description: "Job interview and career development guide.", icon: "🧭" },
+
+  // 7. Islamic & Religious Studies
+  { title: "Quran & Tajweed", description: "Learn proper recitation and understanding of the Quran.", icon: "📖" },
+  { title: "Hadith & Fiqh", description: "Understand Islamic jurisprudence and sayings of the Prophet.", icon: "🕌" },
+  { title: "Islamic Finance", description: "Learn Sharia-compliant banking and finance.", icon: "💹" }
 ];
+
 const teachers = [
   { name: "John Doe", subject: "Mathematics", image: "https://media.istockphoto.com/id/1336324740/photo/having-fun-at-a-garden-party.jpg?s=612x612&w=0&k=20&c=r5iNGwCyH-6ENsCVz7FuyDEJ-Pnokaz-af84Qa28-6E=" },
   { name: "Jane Smith", subject: "Science", image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQm4D8S678Eknda5bH9rwRovirTWlrvH8AD0g&s" },

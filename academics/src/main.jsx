@@ -14,6 +14,7 @@ import Admin from "./Adminpanel.jsx"
 import Login from "./login"
 import TeacherDashboard from "./Teacherdashboard.jsx";
 // Router banayein
+import CourseDetailPage from "./CourseDetailPage.jsx";
 const router = createBrowserRouter([
     {
         path: "/",
@@ -59,7 +60,12 @@ const router = createBrowserRouter([
     {
         path:"/teacherdashboard",
         element:<TeacherDashboard/>,
+    },
+    {
+        path:"/courses/:slug",
+        element:<CourseDetailPage/>,
     }
+
 
 
 
@@ -68,7 +74,7 @@ const router = createBrowserRouter([
 
 // Root render karein
 createRoot(document.getElementById("root")).render(
-    <StrictMode>
+    
         <RouterProvider router={router} />
-    </StrictMode>
+   
 );
