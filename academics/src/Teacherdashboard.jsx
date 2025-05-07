@@ -2,6 +2,8 @@ import React, { useState, useEffect ,useRef} from 'react';
 import axios from "axios"; // Upar import kar lena
 import { io } from 'socket.io-client';
 import {Link} from "react-router-dom"
+import JitsiMeeting from "./Jistsimeet.jsx"
+
 
 import { 
   FiUsers, 
@@ -87,6 +89,9 @@ const TeacherDashboard = () => {
   const [message, setMessage] = useState('');
   const [socket, setSocket] = useState(null);
   const [unreadMessages, setUnreadMessages] = useState({});
+  const [meetingInfo, setMeetingInfo] = useState(null);
+  const [activeSession, setActiveSession] = useState(null);
+
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const fileInputRef = useRef(null);
@@ -94,9 +99,14 @@ const TeacherDashboard = () => {
   const [selectedStudentId, setSelectedStudentId] = useState(null);
   const [students, setStudents] = useState([]);
   const [newMessage, setNewMessage] = useState('');
-
   const socketRef = useRef(null);  // To hold the socket reference
   const studentsRef = useRef(students);
+ 
+
+ 
+
+  
+  
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -342,7 +352,7 @@ const TeacherDashboard = () => {
     setSelectedFile(null);
     setPreviewUrl(null);
   };
-  
+
   
   const [stats, setStats] = useState({
     totalStudents: 0,
@@ -1579,334 +1589,216 @@ const [courses, setCourses] = useState([]);
   </main>
 )}
 {currentPage === 'live-sessions' && (
-  <main className="flex-1 min-h-screen ml-72 bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-6 transition-all duration-500">
-    {/* Decorative Background */}
-    <div className="fixed inset-0 z-0">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(99,102,241,0.15),transparent_50%)]" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(244,63,94,0.15),transparent_50%)]" />
-      <div className="absolute inset-0 bg-grid-pattern opacity-5" />
+  <main className="flex-1 min-h-screen ml-72 bg-[#f8faff] dark:bg-gray-900 transition-all duration-500">
+    {/* Top Banner */}
+    <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white p-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex items-center justify-between">
+          <div className="space-y-2">
+            <h1 className="text-4xl font-bold tracking-tight">Virtual Classroom</h1>
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center">
+                <span className="animate-ping absolute h-3 w-3 rounded-full bg-red-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                <span className="ml-2 text-sm font-medium">Live Session</span>
+              </div>
+              <div className="text-sm font-medium">
+                <span>Session ID: AzadEducation-{Math.random().toString(36).substr(2, 6).toUpperCase()}</span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex items-center space-x-6">
+            <div className="text-center">
+              <div className="text-3xl font-bold tracking-wider" id="session-timer">
+                00:00:00
+              </div>
+              <div className="text-xs font-medium text-blue-200">Duration</div>
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
+                <span className="text-lg font-semibold">25</span>
+              </div>
+              <div className="text-sm">
+                <div className="font-medium">Students</div>
+                <div className="text-blue-200">Online</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div className="relative z-10 max-w-[2000px] mx-auto">
-      {/* Header Section */}
-      <div className="mb-8 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl p-6 border border-white/20 dark:border-gray-700/30 shadow-lg">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-          <div>
-            <div className="flex items-center gap-4">
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-                Teacher Dashboard
-              </h1>
-              <span className="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400 flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                ONLINE
-              </span>
-            </div>
-            <div className="flex flex-wrap items-center gap-4 mt-3">
-              <div className="flex items-center gap-2">
-                <img
-                  src={`https://api.dicebear.com/6.x/initials/svg?seed=${"huzaifa8883"}`}
-                  alt="Profile"
-                  className="w-8 h-8 rounded-full bg-gray-100"
-                />
-                <p className="text-gray-500 dark:text-gray-400">
-                  Welcome back, <span className="font-semibold text-indigo-600 dark:text-indigo-400">{"huzaifa8883"}</span>
-                </p>
-              </div>
-              <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-700">
-                <FiClock className="text-gray-500" />
-                <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
-                  {new Date("2025-03-13 22:40:33").toLocaleString()}
+    {/* Main Content */}
+    <div className="max-w-7xl mx-auto px-8 py-6">
+      {/* Control Panel */}
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg mb-8">
+        <div className="p-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <button 
+                onClick={() => setMeetingStarted(true)}
+                className="group relative px-8 py-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 shadow-lg hover:shadow-xl"
+              >
+                <span className="absolute inset-0 w-full h-full rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 filter blur-lg opacity-50 group-hover:opacity-75 transition-opacity"></span>
+                <span className="relative flex items-center">
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 3l14 9-14 9V3z"/>
+                  </svg>
+                  Start Teaching
                 </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Teacher Action Buttons */}
-          <div className="flex flex-wrap items-center gap-4">
-            <button className="px-4 py-2.5 rounded-xl flex items-center gap-2 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all duration-300">
-              <FiCalendar className="text-lg" />
-              <span className="font-medium">Schedule Class</span>
-            </button>
-            <button className="px-4 py-2.5 rounded-xl flex items-center gap-2 text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 transition-all duration-300 hover:shadow-lg hover:shadow-indigo-500/25 hover:-translate-y-0.5">
-              <FiVideo className="text-lg" />
-              <span className="font-medium">Start New Class</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Teacher Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
-          {[
-            {
-              label: 'Active Students',
-              value: '284',
-              change: '+28 this month',
-              icon: FiUsers,
-              gradient: 'from-blue-600 to-indigo-600',
-              lightBg: 'bg-blue-50',
-              darkBg: 'dark:bg-blue-900/20',
-              textColor: 'text-blue-600 dark:text-blue-400'
-            },
-            {
-              label: 'Teaching Hours',
-              value: '1,248h',
-              change: '+12.4% vs last month',
-              icon: FiClock,
-              gradient: 'from-purple-600 to-pink-600',
-              lightBg: 'bg-purple-50',
-              darkBg: 'dark:bg-purple-900/20',
-              textColor: 'text-purple-600 dark:text-purple-400'
-            },
-            {
-              label: 'Average Rating',
-              value: '4.9',
-              change: '+0.2 points',
-              icon: FiStar,
-              gradient: 'from-amber-600 to-orange-600',
-              lightBg: 'bg-amber-50',
-              darkBg: 'dark:bg-amber-900/20',
-              textColor: 'text-amber-600 dark:text-amber-400'
-            },
-            {
-              label: 'Monthly Earnings',
-              value: '$12.4K',
-              change: '+18.2% vs last month',
-              icon: FiDollarSign,
-              gradient: 'from-emerald-600 to-teal-600',
-              lightBg: 'bg-emerald-50',
-              darkBg: 'dark:bg-emerald-900/20',
-              textColor: 'text-emerald-600 dark:text-emerald-400'
-            }
-          ].map((stat, index) => (
-            <div 
-              key={index}
-              className="group relative bg-white dark:bg-gray-800 rounded-2xl p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-gray-100 dark:border-gray-700/50"
-            >
-              <div className="flex justify-between items-start mb-4">
-                <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${stat.gradient} p-0.5 rotate-3 group-hover:rotate-6 transition-transform duration-300`}>
-                  <div className="w-full h-full rounded-[10px] bg-white dark:bg-gray-800 flex items-center justify-center">
-                    <stat.icon className={`text-2xl ${stat.textColor}`} />
-                  </div>
-                </div>
-                <span className={`px-3 py-1 rounded-full text-sm font-semibold ${stat.lightBg} ${stat.darkBg} ${stat.textColor}`}>
-                  {stat.change}
+              </button>
+              
+              <button 
+                onClick={() => setMeetingStarted(false)}
+                className="group relative px-8 py-4 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 text-white font-medium hover:from-red-700 hover:to-rose-700 transition-all duration-300 shadow-lg hover:shadow-xl"
+              >
+                <span className="absolute inset-0 w-full h-full rounded-xl bg-gradient-to-r from-red-600 to-rose-600 filter blur-lg opacity-50 group-hover:opacity-75 transition-opacity"></span>
+                <span className="relative flex items-center">
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/>
+                  </svg>
+                  End Class
                 </span>
-              </div>
-              <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
-                {stat.value}
-              </h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                {stat.label}
-              </p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Teaching Tools */}
-      <div className="mb-8 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl p-6 border border-white/20 dark:border-gray-700/30 shadow-lg">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Teaching Tools</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
-          {[
-            { icon: FiVideo, label: 'Start Class', color: 'red' },
-            { icon: FiMonitor, label: 'Screen Share', color: 'blue' },
-            { icon: FiFileText, label: 'Whiteboard', color: 'purple' },
-            { icon: FiMessageSquare, label: 'Chat', color: 'green' },
-            { icon: FiUsers, label: 'Students', color: 'pink' },
-            { icon: FiClipboard, label: 'Assignments', color: 'indigo' },
-            { icon: FiBarChart2, label: 'Analytics', color: 'amber' },
-            { icon: FiSettings, label: 'Settings', color: 'gray' }
-          ].map((tool, index) => (
-            <button
-              key={index}
-              className={`p-4 rounded-xl bg-${tool.color}-50 dark:bg-${tool.color}-900/20 hover:bg-${tool.color}-100 dark:hover:bg-${tool.color}-900/30 transition-all duration-300 group`}
-            >
-              <tool.icon className={`text-2xl text-${tool.color}-600 dark:text-${tool.color}-400 mb-2 group-hover:scale-110 transition-transform`} />
-              <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{tool.label}</p>
-            </button>
-          ))}
-        </div>
-      </div>
-
-            {/* Active Sessions */}
-            <div className="mb-8">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Your Active Classes</h2>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-100 dark:bg-green-900/30">
-              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-              <span className="text-sm font-medium text-green-600 dark:text-green-400">2 Classes Live</span>
-            </div>
-            <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500">
-              <FiGrid className="text-lg" />
-            </button>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {[
-            {
-              title: "Advanced React Development",
-              subject: "Web Development",
-              students: 45,
-              duration: "1h 30m",
-              progress: 65,
-              thumbnail: "react-course.jpg"
-            },
-            {
-              title: "JavaScript Fundamentals",
-              subject: "Programming",
-              students: 38,
-              duration: "2h 15m",
-              progress: 45,
-              thumbnail: "javascript-course.jpg"
-            }
-          ].map((session, index) => (
-            <div key={index} className="group bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl border border-white/20 dark:border-gray-700/30 overflow-hidden hover:shadow-xl transition-all duration-500">
-              <div className="relative">
-                {/* Class Preview */}
-                <div className="relative h-48">
-                  <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 to-purple-600">
-                    <div className="absolute inset-0 bg-grid-pattern opacity-20"></div>
-                  </div>
-                  
-                  {/* Live Badge */}
-                  <div className="absolute top-4 left-4 px-3 py-1 rounded-full bg-red-500 text-white text-sm font-medium flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>
-                    LIVE NOW
-                  </div>
-                  
-                  {/* Teacher Controls */}
-                  <div className="absolute top-4 right-4 flex gap-2">
-                    <button className="p-2 rounded-lg bg-black/30 hover:bg-black/50 text-white backdrop-blur-sm transition-all duration-300">
-                      <FiMic className="text-lg" />
-                    </button>
-                    <button className="p-2 rounded-lg bg-black/30 hover:bg-black/50 text-white backdrop-blur-sm transition-all duration-300">
-                      <FiVideo className="text-lg" />
-                    </button>
-                    <button className="p-2 rounded-lg bg-red-500/80 hover:bg-red-500 text-white backdrop-blur-sm transition-all duration-300">
-                      <FiPhoneOff className="text-lg" />
-                    </button>
-                  </div>
-
-                  {/* Class Info */}
-                  <div className="absolute bottom-4 left-4 right-4">
-                    <h3 className="text-xl font-bold text-white mb-2">{session.title}</h3>
-                    <div className="flex items-center gap-4">
-                      <span className="text-white/90 text-sm flex items-center gap-2">
-                        <FiBook className="text-white/70" />
-                        {session.subject}
-                      </span>
-                      <span className="text-white/90 text-sm flex items-center gap-2">
-                        <FiUsers className="text-white/70" />
-                        {session.students} Students
-                      </span>
-                      <span className="text-white/90 text-sm flex items-center gap-2">
-                        <FiClock className="text-white/70" />
-                        {session.duration}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Teaching Controls */}
-                <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-                  <div className="flex flex-wrap items-center gap-4">
-                    <button className="p-2 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100">
-                      <FiMonitor className="text-lg" />
-                    </button>
-                    <button className="p-2 rounded-lg bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 hover:bg-purple-100">
-                      <FiFileText className="text-lg" />
-                    </button>
-                    <button className="p-2 rounded-lg bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 hover:bg-green-100">
-                      <FiMessageSquare className="text-lg" />
-                    </button>
-                    <button className="p-2 rounded-lg bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 hover:bg-amber-100">
-                      <FiBarChart2 className="text-lg" />
-                    </button>
-                    <div className="flex-1"></div>
-                    <button className="px-4 py-2 rounded-lg bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 font-medium hover:bg-red-200">
-                      End Class
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Upcoming Classes */}
-      <div className="mb-8 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl p-6 border border-white/20 dark:border-gray-700/30 shadow-lg">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Today's Schedule</h2>
-          <button className="text-indigo-600 dark:text-indigo-400 font-medium hover:text-indigo-700">View Calendar</button>
-        </div>
-
-        <div className="space-y-4">
-          {[
-            { time: '11:00', title: 'React Hooks Deep Dive', students: 42, duration: '1h 30m', status: 'upcoming' },
-            { time: '13:30', title: 'Node.js Best Practices', students: 38, duration: '2h', status: 'upcoming' },
-            { time: '16:00', title: 'Database Design Workshop', students: 35, duration: '1h 45m', status: 'upcoming' }
-          ].map((class_, index) => (
-            <div key={index} className="group flex items-center gap-6 p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all duration-300">
-              <div className="text-center">
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">{class_.time}</p>
-                <p className="text-sm text-gray-500">Today</p>
-              </div>
-
-              <div className="flex-1">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white group-hover:text-indigo-600 transition-colors">
-                  {class_.title}
-                </h3>
-                <div className="flex items-center gap-4 mt-1">
-                  <span className="text-sm text-gray-500 flex items-center gap-1">
-                    <FiUsers className="text-base" />
-                    {class_.students} enrolled
-                  </span>
-                  <span className="text-sm text-gray-500 flex items-center gap-1">
-                    <FiClock className="text-base" />
-                    {class_.duration}
-                  </span>
-                </div>
-              </div>
-
-              <button className="px-4 py-2 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 font-medium hover:bg-indigo-100 transition-colors">
-                Start Class
               </button>
             </div>
-          ))}
+
+            <div className="flex items-center space-x-3">
+              {/* Quick Actions */}
+              <div className="flex -space-x-2">
+                <button className="relative z-30 p-3 rounded-xl bg-white dark:bg-gray-700 shadow-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-all duration-300 flex items-center space-x-2">
+                  <svg className="w-6 h-6 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                  </svg>
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Share Screen</span>
+                </button>
+                
+                <button className="relative z-20 p-3 rounded-xl bg-white dark:bg-gray-700 shadow-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-all duration-300 flex items-center space-x-2">
+                  <svg className="w-6 h-6 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0-11V3"/>
+                  </svg>
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Record</span>
+                </button>
+                
+                <button className="relative z-10 p-3 rounded-xl bg-white dark:bg-gray-700 shadow-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-all duration-300 flex items-center space-x-2">
+                  <svg className="w-6 h-6 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                  </svg>
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Chat</span>
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Quick Actions & Notifications */}
-      <button className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg hover:shadow-xl hover:shadow-indigo-500/25 hover:-translate-y-1 transition-all duration-300 flex items-center justify-center group">
-        <FiPlus className="text-2xl transform group-hover:rotate-45 transition-transform duration-300" />
-      </button>
+      {/* Meeting Container with Enhanced UI */}
+      <div className="grid grid-cols-4 gap-8">
+        <div className="col-span-3">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden">
+            <div className="aspect-w-16 aspect-h-9 relative">
+              <JitsiMeeting
+                roomName="AzadEducationLiveRoom1"
+                configOverwrite={{
+                  startWithAudioMuted: false,
+                  disableModeratorIndicator: true,
+                  startScreenSharing: false,
+                  enableEmailInStats: false,
+                  prejoinPageEnabled: false,
+                  hideConferenceSubject: true,
+                  hideConferenceTimer: true,
+                  disableResponsiveTiles: true
+                }}
+                interfaceConfigOverwrite={{
+                  DISABLE_JOIN_LEAVE_NOTIFICATIONS: true,
+                  SHOW_JITSI_WATERMARK: false,
+                  TOOLBAR_BUTTONS: [
+                    'microphone', 'camera', 'desktop', 'fullscreen',
+                    'fodeviceselection', 'hangup', 'profile', 'chat',
+                    'recording', 'livestreaming', 'raisehand',
+                    'videoquality', 'filmstrip', 'feedback', 'stats',
+                    'shortcuts', 'tileview', 'videobackgroundblur',
+                    'download', 'help', 'mute-everyone'
+                  ],
+                }}
+                getIFrameRef={(iframeRef) => { 
+                  iframeRef.style.height = '600px';
+                  iframeRef.style.width = '100%';
+                }}
+              />
+            </div>
+          </div>
+        </div>
 
-      {/* Teacher Control Panel */}
-      <div className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-2xl border border-white/20 dark:border-gray-700/30 shadow-lg p-4">
-        <div className="flex items-center gap-6">
-          <button className="p-4 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-200 transition-colors">
-            <FiVideo className="text-xl" />
-          </button>
-          <button className="p-4 rounded-xl bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 hover:bg-purple-200 transition-colors">
-            <FiMonitor className="text-xl" />
-          </button>
-          <button className="p-4 rounded-xl bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 hover:bg-green-200 transition-colors">
-            <FiMessageSquare className="text-xl" />
-          </button>
-          <button className="p-4 rounded-xl bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 hover:bg-amber-200 transition-colors">
-            <FiUsers className="text-xl" />
-          </button>
-          <button className="px-6 py-4 rounded-xl bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 transition-colors font-medium">
-            End All Classes
-          </button>
+        {/* Participants Panel */}
+        <div className="col-span-1">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg h-[600px] overflow-hidden flex flex-col">
+            <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-white flex items-center justify-between">
+                Participants
+                <span className="bg-indigo-100 text-indigo-600 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-indigo-900 dark:text-indigo-300">
+                  25 Online
+                </span>
+              </h3>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+              {/* Teacher */}
+              <div className="bg-indigo-50 dark:bg-indigo-900/30 rounded-xl p-3 flex items-center space-x-3">
+                <div className="relative">
+                  <div className="w-12 h-12 rounded-full bg-indigo-600 flex items-center justify-center text-white font-semibold text-lg">
+                    HQ
+                  </div>
+                  <div className="absolute -bottom-1 -right-1 h-4 w-4 bg-green-500 rounded-full border-2 border-white dark:border-gray-800"></div>
+                </div>
+                <div>
+                  <p className="text-gray-900 dark:text-white font-medium">Huzaifa Quershi</p>
+                  <p className="text-indigo-600 dark:text-indigo-400 text-sm font-medium">Teacher</p>
+                </div>
+              </div>
+
+              {/* Students */}
+              {Array(5).fill(null).map((_, i) => (
+                <div key={i} className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-3 flex items-center space-x-3">
+                  <div className="relative">
+                    <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center text-gray-600 dark:text-gray-300 font-medium">
+                      {String.fromCharCode(65 + i)}S
+                    </div>
+                    <div className="absolute -bottom-1 -right-1 h-3 w-3 bg-green-500 rounded-full border-2 border-white dark:border-gray-800"></div>
+                  </div>
+                  <div>
+                    <p className="text-gray-800 dark:text-gray-200 font-medium">Student {i + 1}</p>
+                    <p className="text-gray-500 dark:text-gray-400 text-sm">Listening</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Quick Actions Footer */}
+            <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+              <div className="grid grid-cols-2 gap-2">
+                <button className="flex items-center justify-center space-x-2 px-4 py-2 bg-indigo-50 dark:bg-gray-700 rounded-lg text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-gray-600 transition-colors duration-200">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                  </svg>
+                  <span className="text-sm font-medium">Invite</span>
+                </button>
+                <button className="flex items-center justify-center space-x-2 px-4 py-2 bg-red-50 dark:bg-gray-700 rounded-lg text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-gray-600 transition-colors duration-200">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7a4 4 0 11-8 0 4 4 0 018 0zM9 14a6 6 0 00-6 6v1h12v-1a6 6 0 00-6-6zM21 12h-6"/>
+                  </svg>
+                  <span className="text-sm font-medium">Remove</span>
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </main>
 )}
+
 {currentPage === 'messenger' && (
   <main className="flex-1 min-h-screen ml-72 bg-gray-50 dark:bg-gray-900">
     <div className="relative h-screen flex flex-col">

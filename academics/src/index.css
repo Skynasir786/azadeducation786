@@ -1329,3 +1329,10 @@ body {
 .courses-grid .course-card:nth-child(n) {
   animation-delay: calc(0.1s * var(--i));
 }
+
+/* 
+html, body {
+  height: auto !important;
+  overflow: auto !important;
+} */
+

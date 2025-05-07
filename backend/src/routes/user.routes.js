@@ -4,6 +4,8 @@ import { registerUser,loginuser,logout,getApprovedUsers, approveUser,rreshtokens
 import {upload} from '../middlewares/multer.middleware.js'
 import { logouting } from '../middlewares/auth.middleware.js'
 import { uploadoncloudinary } from '../utils/cloudinary.js'
+import { createZoomMeetingHandler } from '../services/zoomService.js';
+
 import { createCourse,getAllCourses,getSingleCourse } from '../controllers/courses.controller.js'
 const router = Router()
 router.route("/register").post(
@@ -53,5 +55,15 @@ router.post("/file", upload.single("file"), async (req, res) => {
       res.status(500).json({ error: "Internal server error" });
     }
   });
+  router.post('/create', async (req, res) => {
+    try {
+      const meeting = await createZoomMeetingHandler(req.body);
+      res.status(200).json(meeting);
+    } catch (error) {
+      console.error(error.message);
+      res.status(500).json({ error: 'Meeting creation failed' });
+    }
+  });
+  
 
 export{router}
