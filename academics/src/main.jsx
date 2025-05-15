@@ -13,6 +13,7 @@ import Signup from "./Signup.jsx"
 import Admin from "./Adminpanel.jsx"
 import Login from "./login"
 import TeacherDashboard from "./Teacherdashboard.jsx";
+import Studentdashboard from "./Studentdashboard.jsx"
 // Router banayein
 import CourseDetailPage from "./CourseDetailPage.jsx";
 const router = createBrowserRouter([
@@ -64,6 +65,10 @@ const router = createBrowserRouter([
     {
         path:"/courses/:slug",
         element:<CourseDetailPage/>,
+    },
+    {
+        path:"/studentdashboard",
+        element:<Studentdashboard/>
     }
 
 

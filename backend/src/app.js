@@ -1,6 +1,7 @@
 import cookieParser from "cookie-parser";
 import express from "express";
 import cors from 'cors'
+import bodyParser from "body-parser";
 
 
 const app = express();
@@ -21,6 +22,8 @@ app.use(express.urlencoded({
 app.use(express.json(({limit:"16kb"})))
 app.use(express.static('public'))
 app.use(cookieParser())
+app.use(bodyParser.json({ limit: '10mb' })); // Allow up to 10MB for JSON payload
+app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' })); // Allow up to 10MB for URL-encoded data
 
 app.get("/", (req, res) => {
     res.send("Hello, World!");

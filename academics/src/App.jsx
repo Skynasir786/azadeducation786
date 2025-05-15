@@ -1,59 +1,67 @@
 import React, { useState, useEffect } from "react";
 import { RiSearchLine, RiNotificationLine, RiCloseLine, RiMenuLine, RiChatSmileLine,RiChatQuoteLine } from "react-icons/ri";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaUserGraduate, FaChalkboardTeacher, FaChalkboard,FaBookOpen,FaLinkedin,FaTwitter,FaEnvelope ,FaCalendarAlt,FaClock,FaUser} from 'react-icons/fa';
+import { FaUserGraduate, FaChalkboardTeacher, FaChalkboard,FaBookOpen,FaLinkedin,FaTwitter,FaEnvelope ,FaCalendarAlt,FaUser} from 'react-icons/fa';
 import { useNavigate } from "react-router-dom";
+import { 
+  FaGraduationCap, FaBook, FaCog, FaMedkit, FaClipboardList, FaUniversity,
+  FaLaptopCode, FaPalette, FaChartLine, FaShoppingCart, FaCode, FaMobile,
+  FaShieldAlt, FaRobot, FaLanguage, FaPen, FaGlobe, FaLandmark,
+  FaMedal, FaUserShield, FaSchool, FaCalculator, FaChartBar, FaRocket,
+  FaClock, FaMicrophone, FaCrown, FaCompass, FaQuran, FaMosque, FaMoneyBillWave
+} from 'react-icons/fa';
 import Slider from "react-slick";
 import CountUp from "react-countup";
 import "slick-carousel/slick/slick.css";
 import {Link} from "react-router-dom"
 import pakistanCities from "./pakistanCities";
 import "slick-carousel/slick/slick-theme.css";
+
 const categories = [
   // 1. Academic Courses (School & College)
-  { title: "Matric & Intermediate", description: "Science, Arts, and Commerce subjects for school & college level.", icon: "🏫" },
-  { title: "O-Level & A-Level", description: "Cambridge & Federal Board curriculum studies.", icon: "📘" },
-  { title: "Engineering Entrance Exams", description: "ECAT, NUST, PIEAS, GIKI preparation.", icon: "🛠️" },
-  { title: "Medical Entrance Exams", description: "MDCAT, NUMS, AKU entrance test prep.", icon: "🩺" },
-  { title: "CSS & FPSC Preparation", description: "Civil services competitive exams prep.", icon: "📋" },
-  { title: "Bachelors & Masters", description: "University-level education for BS, MS, MBA, and more.", icon: "🎓" },
+  { title: "Matric & Intermediate", description: "Science, Arts, and Commerce subjects for school & college level.", icon: <FaGraduationCap className="text-2xl text-blue-600" /> },
+  { title: "O-Level & A-Level", description: "Cambridge & Federal Board curriculum studies.", icon: <FaBook className="text-2xl text-indigo-600" /> },
+  { title: "Engineering Entrance Exams", description: "ECAT, NUST, PIEAS, GIKI preparation.", icon: <FaCog className="text-2xl text-gray-700" /> },
+  { title: "Medical Entrance Exams", description: "MDCAT, NUMS, AKU entrance test prep.", icon: <FaMedkit className="text-2xl text-red-600" /> },
+  { title: "CSS & FPSC Preparation", description: "Civil services competitive exams prep.", icon: <FaClipboardList className="text-2xl text-green-600" /> },
+  { title: "Bachelors & Masters", description: "University-level education for BS, MS, MBA, and more.", icon: <FaUniversity className="text-2xl text-purple-600" /> },
 
   // 2. Professional & Skill-Based Courses
-  { title: "Freelancing", description: "Learn to earn via Fiverr, Upwork, and others.", icon: "💻" },
-  { title: "Graphic Designing", description: "Master Photoshop, Illustrator, Canva etc.", icon: "🎨" },
-  { title: "Digital Marketing", description: "SEO, Facebook & Google Ads, SMM skills.", icon: "📈" },
-  { title: "E-commerce", description: "Amazon, Daraz, Shopify, and dropshipping.", icon: "🛒" },
-  { title: "Web Development", description: "HTML, CSS, JS, React, Laravel, WordPress.", icon: "🌐" },
-  { title: "App Development", description: "Flutter, React Native, Android & iOS.", icon: "📱" },
-  { title: "Cyber Security", description: "Ethical hacking and online safety.", icon: "🛡️" },
-  { title: "Data Science & AI", description: "Python, Machine Learning, AI tools.", icon: "🤖" },
+  { title: "Freelancing", description: "Learn to earn via Fiverr, Upwork, and others.", icon: <FaLaptopCode className="text-2xl text-blue-500" /> },
+  { title: "Graphic Designing", description: "Master Photoshop, Illustrator, Canva etc.", icon: <FaPalette className="text-2xl text-pink-600" /> },
+  { title: "Digital Marketing", description: "SEO, Facebook & Google Ads, SMM skills.", icon: <FaChartLine className="text-2xl text-green-500" /> },
+  { title: "E-commerce", description: "Amazon, Daraz, Shopify, and dropshipping.", icon: <FaShoppingCart className="text-2xl text-orange-600" /> },
+  { title: "Web Development", description: "HTML, CSS, JS, React, Laravel, WordPress.", icon: <FaCode className="text-2xl text-indigo-500" /> },
+  { title: "App Development", description: "Flutter, React Native, Android & iOS.", icon: <FaMobile className="text-2xl text-blue-600" /> },
+  { title: "Cyber Security", description: "Ethical hacking and online safety.", icon: <FaShieldAlt className="text-2xl text-red-500" /> },
+  { title: "Data Science & AI", description: "Python, Machine Learning, AI tools.", icon: <FaRobot className="text-2xl text-purple-500" /> },
 
   // 3. Language & Communication Courses
-  { title: "English Language", description: "IELTS, TOEFL, and spoken English training.", icon: "🗣️" },
-  { title: "Urdu & Pashto Writing", description: "Improve writing skills in native languages.", icon: "✍️" },
-  { title: "Foreign Languages", description: "Learn Chinese, French, German and more.", icon: "🌍" },
+  { title: "English Language", description: "IELTS, TOEFL, and spoken English training.", icon: <FaLanguage className="text-2xl text-blue-500" /> },
+  { title: "Urdu & Pashto Writing", description: "Improve writing skills in native languages.", icon: <FaPen className="text-2xl text-green-600" /> },
+  { title: "Foreign Languages", description: "Learn Chinese, French, German and more.", icon: <FaGlobe className="text-2xl text-teal-600" /> },
 
   // 4. Government & Competitive Exam Preparation
-  { title: "Government Exams", description: "CSS, PMS, FPSC, PPSC, SPSC and more.", icon: "🏛️" },
-  { title: "Military Test Prep", description: "Preparation for ISSB and military tests.", icon: "🎖️" },
-  { title: "Police & Agencies Prep", description: "FIA, ASF, NAB and other agencies prep.", icon: "🚓" },
-  { title: "University Entry Tests", description: "Entry tests for LUMS, IBA, FAST, GIKI etc.", icon: "🏫" },
+  { title: "Government Exams", description: "CSS, PMS, FPSC, PPSC, SPSC and more.", icon: <FaLandmark className="text-2xl text-gray-700" /> },
+  { title: "Military Test Prep", description: "Preparation for ISSB and military tests.", icon: <FaMedal className="text-2xl text-yellow-600" /> },
+  { title: "Police & Agencies Prep", description: "FIA, ASF, NAB and other agencies prep.", icon: <FaUserShield className="text-2xl text-blue-700" /> },
+  { title: "University Entry Tests", description: "Entry tests for LUMS, IBA, FAST, GIKI etc.", icon: <FaSchool className="text-2xl text-purple-600" /> },
 
   // 5. Business & Finance
-  { title: "Accounting & Finance", description: "QuickBooks, Excel, SAP, and more.", icon: "💰" },
-  { title: "Stock & Crypto Trading", description: "Learn investment and trading strategies.", icon: "📊" },
-  { title: "Entrepreneurship", description: "Start your own business with confidence.", icon: "🚀" },
+  { title: "Accounting & Finance", description: "QuickBooks, Excel, SAP, and more.", icon: <FaCalculator className="text-2xl text-green-700" /> },
+  { title: "Stock & Crypto Trading", description: "Learn investment and trading strategies.", icon: <FaChartBar className="text-2xl text-blue-600" /> },
+  { title: "Entrepreneurship", description: "Start your own business with confidence.", icon: <FaRocket className="text-2xl text-orange-600" /> },
 
   // 6. Personal Development
-  { title: "Time Management", description: "Boost productivity and manage time wisely.", icon: "⏰" },
-  { title: "Public Speaking", description: "Master communication and speaking skills.", icon: "🧑‍🎤" },
-  { title: "Leadership", description: "Lead teams and develop leadership qualities.", icon: "👑" },
-  { title: "Career Counseling", description: "Job interview and career development guide.", icon: "🧭" },
+  { title: "Time Management", description: "Boost productivity and manage time wisely.", icon: <FaClock className="text-2xl text-indigo-600" /> },
+  { title: "Public Speaking", description: "Master communication and speaking skills.", icon: <FaMicrophone className="text-2xl text-red-600" /> },
+  { title: "Leadership", description: "Lead teams and develop leadership qualities.", icon: <FaCrown className="text-2xl text-yellow-600" /> },
+  { title: "Career Counseling", description: "Job interview and career development guide.", icon: <FaCompass className="text-2xl text-blue-500" /> },
 
   // 7. Islamic & Religious Studies
-  { title: "Quran & Tajweed", description: "Learn proper recitation and understanding of the Quran.", icon: "📖" },
-  { title: "Hadith & Fiqh", description: "Understand Islamic jurisprudence and sayings of the Prophet.", icon: "🕌" },
-  { title: "Islamic Finance", description: "Learn Sharia-compliant banking and finance.", icon: "💹" }
+  { title: "Quran & Tajweed", description: "Learn proper recitation and understanding of the Quran.", icon: <FaQuran className="text-2xl text-green-600" /> },
+  { title: "Hadith & Fiqh", description: "Understand Islamic jurisprudence and sayings of the Prophet.", icon: <FaMosque className="text-2xl text-teal-600" /> },
+  { title: "Islamic Finance", description: "Learn Sharia-compliant banking and finance.", icon: <FaMoneyBillWave className="text-2xl text-green-700" /> }
 ];
 
 const teachers = [
@@ -159,54 +167,118 @@ const StatsSection = () => (
 </section>
 );
 
+
 const CategorySection = () => (
-<section className="py-20 fonting bg-gradient-to-r from-purple-50 via-pink-50 to-indigo-50">
-  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    {/* Section Heading */}
-    <div className="text-center mb-16">
-      <h2 className="text-5xl font-extrabold text-purple-900 mb-4 animate-fade-in-up">
-        Explore Categories
-      </h2>
-      <p className="text-xl text-gray-600 animate-fade-in-up delay-100">
-        Discover a wide range of topics to enhance your skills and knowledge
-      </p>
+  <section className="py-24 bg-gradient-to-br from-purple-50/90 via-white to-indigo-50/90 relative overflow-hidden">
+    {/* Background Pattern */}
+    <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
+    
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      {/* Enhanced Section Heading */}
+      <motion.div 
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        viewport={{ once: true }}
+        className="text-center mb-20"
+      >
+        <span className="text-sm font-bold text-purple-600 tracking-wider uppercase mb-4 block">
+          Educational Categories
+        </span>
+        <h2 className="text-5xl font-extrabold bg-gradient-to-r from-purple-900 via-purple-700 to-indigo-800 
+          bg-clip-text text-transparent mb-6 leading-tight">
+          Explore Categories
+        </h2>
+        <p className="text-xl text-gray-600/90 max-w-2xl mx-auto font-medium">
+          Discover a wide range of topics to enhance your skills and knowledge
+        </p>
+      </motion.div>
+
+      {/* Enhanced Categories Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10">
+        {categories.map((category, index) => (
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            whileHover={{ 
+              y: -12, 
+              scale: 1.02,
+              transition: { duration: 0.4, ease: "easeOut" }
+            }}
+            transition={{ 
+              duration: 0.5, 
+              delay: index * 0.1,
+              ease: "easeOut" 
+            }}
+            viewport={{ once: true }}
+            className="group relative"
+          >
+            {/* Card Container with Glass Effect */}
+            <div className="relative bg-white/90 backdrop-blur-xl p-8 rounded-3xl
+              shadow-[0_15px_40px_-15px_rgba(0,0,0,0.1)] 
+              hover:shadow-[0_20px_50px_-15px_rgba(124,58,237,0.15)]
+              transition-all duration-500 overflow-hidden
+              border border-purple-100/50">
+              
+              {/* Gradient Hover Effect */}
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-600/5 via-pink-600/5 to-indigo-600/5 
+                opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+              {/* Decorative Elements */}
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-500/5 to-pink-500/5 
+                rounded-full -mr-16 -mt-16 transition-transform duration-500 group-hover:scale-110"></div>
+              
+              {/* Category Icon with Enhanced Animation */}
+              <div className="relative mb-8 inline-block">
+                <div className="absolute inset-0 bg-purple-600/10 rounded-2xl blur-2xl group-hover:blur-3xl 
+                  transition-all duration-500 scale-75 group-hover:scale-110"></div>
+                <div className="relative text-6xl transform group-hover:scale-110 group-hover:rotate-3 
+                  transition-transform duration-500">
+                  {category.icon}
+                </div>
+              </div>
+
+              {/* Category Content */}
+              <div className="relative">
+                <h3 className="text-2xl font-bold bg-gradient-to-r from-purple-900 to-indigo-800 
+                  bg-clip-text text-transparent mb-4 group-hover:translate-x-1 transition-transform duration-300">
+                  {category.title}
+                </h3>
+                
+                <p className="text-gray-600 leading-relaxed group-hover:translate-x-1 
+                  transition-transform duration-300">
+                  {category.description}
+                </p>
+
+                {/* Hover Arrow */}
+                <div className="mt-6 flex items-center text-purple-600 font-semibold opacity-0 
+                  group-hover:opacity-100 transform translate-x-0 group-hover:translate-x-2 
+                  transition-all duration-300">
+                  Explore More
+                  <svg className="w-5 h-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        ))}
+      </div>
     </div>
 
-    {/* Categories Grid */}
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-      {categories.map((category, index) => (
-        <motion.div
-          key={index}
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          whileHover={{ y: -10, scale: 1.03 }}
-          transition={{ duration: 0.5, ease: "easeOut" }}
-          viewport={{ once: true }}
-          className="relative bg-white p-8 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden group"
-        >
-          {/* Gradient Border */}
-          <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-pink-400 opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
-
-          {/* Category Icon */}
-          <div className="text-6xl mb-6 text-purple-600">
-            {category.icon}
-          </div>
-
-          {/* Category Title */}
-          <h3 className="text-2xl font-bold text-purple-900 mb-4">
-            {category.title}
-          </h3>
-
-          {/* Category Description */}
-          <p className="text-gray-600 leading-relaxed">
-            {category.description}
-          </p>
-        </motion.div>
-      ))}
-    </div>
-  </div>
-</section>
+    {/* Add CSS for Background Pattern */}
+    <style jsx>{`
+      .bg-grid-pattern {
+        background-image: 
+          linear-gradient(to right, rgba(99, 102, 241, 0.1) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(99, 102, 241, 0.1) 1px, transparent 1px);
+        background-size: 4rem 4rem;
+      }
+    `}</style>
+  </section>
 );
+
 
 const TeachersSection = () => (
   <section className="py-20 fonting bg-gradient-to-r from-purple-50 via-blue-50 to-teal-50">
@@ -478,53 +550,34 @@ function App() {
     }
     setSelectedCity("");
   };
-  const enhancedSubjects = [
-    {
-      id: 1,
-      name: "Mathematics",
-      trendingCourses: [
-        { id: 1, title: "Algebra Basics", description: "Learn the fundamentals of algebra.", image: "https://wallup.net/wp-content/uploads/2019/09/903430-physics-equation-mathematics-math-formula-poster-science-text-typography-1-748x468.jpg", duration: "4 weeks", instructor: "John Doe" },
-        { id: 2, title: "Geometry Mastery", description: "Master geometric concepts.", image: "https://png.pngtree.com/thumb_back/fh260/background/20230720/pngtree-background-of-podium-in-3d-with-mathematics-and-physics-theme-image_3712585.jpg", duration: "6 weeks", instructor: "Jane Smith" },
-        { id: 3, title: "Calculus Introduction", description: "Get started with calculus.", image: "https://mrwallpaper.com/images/thumbnail/mathematics-formulas-with-calculator-n7ja0il1i2k1pya4.jpg", duration: "8 weeks", instructor: "Emily Johnson" },
-      ],
-    },
-    {
-      id: 2,
-      name: "Science",
-      trendingCourses: [
-        { id: 1, title: "Physics Fundamentals", description: "Understand the basics of physics.", image: "https://via.placeholder.com/400", duration: "5 weeks", instructor: "Albert Newton" },
-        { id: 2, title: "Chemistry Essentials", description: "Learn essential chemistry concepts.", image: "https://via.placeholder.com/400", duration: "7 weeks", instructor: "Marie Curie" },
-        { id: 3, title: "Biology Insights", description: "Explore the world of biology.", image: "https://via.placeholder.com/400", duration: "6 weeks", instructor: "Charles Darwin" },
-      ],
-    },
-    {
-      id: 3,
-      name: "Literature",
-      trendingCourses: [
-        { id: 1, title: "Classic Literature", description: "Dive into classic literary works.", image: "https://via.placeholder.com/400", duration: "10 weeks", instructor: "William Shakespeare" },
-        { id: 2, title: "Modern Fiction", description: "Explore contemporary fiction.", image: "https://via.placeholder.com/400", duration: "8 weeks", instructor: "George Orwell" },
-        { id: 3, title: "Poetry Analysis", description: "Analyze famous poems.", image: "https://via.placeholder.com/400", duration: "6 weeks", instructor: "Emily Dickinson" },
-      ],
-    },
-    {
-      id: 4,
-      name: "History",
-      trendingCourses: [
-        { id: 1, title: "Ancient Civilizations", description: "Learn about ancient cultures.", image: "https://via.placeholder.com/400", duration: "12 weeks", instructor: "Howard Carter" },
-        { id: 2, title: "World Wars", description: "Understand the impact of world wars.", image: "https://via.placeholder.com/400", duration: "10 weeks", instructor: "Winston Churchill" },
-        { id: 3, title: "Modern History", description: "Study recent historical events.", image: "https://via.placeholder.com/400", duration: "8 weeks", instructor: "Niall Ferguson" },
-      ],
-    },
-    {
-      id: 5,
-      name: "Art",
-      trendingCourses: [
-        { id: 1, title: "Art History", description: "Explore the history of art.", image: "https://via.placeholder.com/400", duration: "9 weeks", instructor: "Leonardo da Vinci" },
-        { id: 2, title: "Drawing Techniques", description: "Learn various drawing techniques.", image: "https://via.placeholder.com/400", duration: "6 weeks", instructor: "Vincent van Gogh" },
-        { id: 3, title: "Digital Art", description: "Create art using digital tools.", image: "https://via.placeholder.com/400", duration: "8 weeks", instructor: "Andy Warhol" },
-      ],
-    },
-  ];
+const enhancedSubjects = [
+  { name: "Mathematics" },
+  { name: "Physics" },
+  { name: "Chemistry" },
+  { name: "Biology" },
+  { name: "English Language" },
+  { name: "Urdu Literature" },
+  { name: "Islamic Studies" },
+  { name: "Pakistan Studies" },
+  { name: "Computer Science" },
+  { name: "Web Development" },
+  { name: "App Development" },
+  { name: "Cyber Security" },
+  { name: "Graphic Designing" },
+  { name: "Digital Marketing" },
+  { name: "Freelancing" },
+  { name: "Data Science & AI" },
+  { name: "Accounting & Finance" },
+  { name: "Economics" },
+  { name: "Business & Entrepreneurship" },
+  { name: "Medical Entrance Test Prep" },
+  { name: "Engineering Entry Test Prep" },
+  { name: "CSS & Government Exam Prep" },
+  { name: "Public Speaking & Communication" },
+  { name: "Quran & Tajweed" },
+  { name: "Foreign Languages" }
+];
+
   
 
   // Enhanced Navbar Component
@@ -818,20 +871,21 @@ function App() {
       </label>
       <div className="relative">
         <select
-          value={selectedSubject}
-          onChange={(e) => setSelectedSubject(e.target.value)}
-          className="w-full p-4 rounded-xl text-gray-700 border-2 border-gray-200 bg-white/95
-                   focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500
-                   hover:border-blue-400 transition-all appearance-none shadow-sm
-                   group-hover:shadow-lg group-hover:bg-blue-50/50"
-        >
-          <option value="" className="text-gray-500">Choose a subject</option>
-          {enhancedSubjects.map((subject) => (
-            <option key={subject.id} value={subject.id} className="text-gray-700">
-              {subject.name}
-            </option>
-          ))}
-        </select>
+  value={selectedSubject}
+  onChange={(e) => setSelectedSubject(e.target.value)}
+  className="w-full p-4 rounded-xl text-gray-700 border-2 border-gray-200 bg-white/95
+         focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500
+         hover:border-blue-400 transition-all appearance-none shadow-sm
+         group-hover:shadow-lg group-hover:bg-blue-50/50"
+>
+  <option value="" className="text-gray-500">Choose a subject</option>
+  {Array.isArray(enhancedSubjects) && enhancedSubjects.map((subject) => (
+    <option key={subject.name} value={subject.name} className="text-gray-700">
+      {subject.name}
+    </option>
+  ))}
+</select>
+
         <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
           <div className="bg-blue-500/10 rounded-full p-1 transition-all duration-200 group-hover:bg-blue-500/20">
             <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -977,7 +1031,7 @@ function App() {
       { number: 100000, label: "Students", icon: "👨‍🎓" },
       { number: 5000, label: "Teachers", icon: "👩‍🏫" },
       { number: 10000, label: "Classes", icon: "📚" },
-      { number: 50, label: "Countries", icon: "🌍" },
+      { number: 240, label: "Cities", icon: "🌍" },
     ].map((stat, index) => (
       <motion.div
         key={index}
@@ -1033,9 +1087,13 @@ function App() {
     };
 
     return (
-      <section className="py-16 bg-gray-50 fonting">
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <h2 className="text-4xl font-extrabold text-center text-gray-800 mb-12">Featured Classes</h2>
+     <section className="py-16 bg-gray-50 fonting">
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <h2 className="text-4xl font-extrabold text-center text-gray-800 mb-12">Featured Classes</h2>
+    
+    {Array.isArray(enhancedSubjects) && 
+     enhancedSubjects.length > 0 && 
+     enhancedSubjects[0].trendingCourses ? (
       <Slider {...settings}>
         {enhancedSubjects[0].trendingCourses.map((course) => (
           <div key={course.id} className="px-3">
@@ -1043,8 +1101,12 @@ function App() {
           </div>
         ))}
       </Slider>
-    </div>
-  </section>
+    ) : (
+      <p className="text-center text-gray-500">Loading featured classes...</p>
+    )}
+  </div>
+</section>
+
     );
   };
 

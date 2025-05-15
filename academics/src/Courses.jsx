@@ -1,10 +1,10 @@
 import React, { useState, useEffect,useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FiSearch, FiBook, FiUser, FiMapPin, FiClock, FiCalendar, FiUserPlus, FiAward, FiPlay, FiTrendingUp, FiGrid,FiUsers,FiBookOpen,FiGlobe,FiFilter,  FiBarChart, FiX, FiRefreshCw,FiDollarSign, FiStar, FiVideo,FiDownload, FiArrowRight ,FiCheck } from "react-icons/fi";
+import { FiSearch, FiBook, FiUser, FiMapPin, FiClock, FiCalendar, FiUserPlus, FiAward, FiPlay, FiTrendingUp, FiGrid,FiUsers,FiBookOpen,FiGlobe,FiFilter,  FiBarChart, FiX, FiRefreshCw,FiDollarSign, FiStar, FiVideo,FiDownload, FiArrowRight ,FiCheck,FiChevronDown } from "react-icons/fi";
 import { RiSearchLine, RiNotificationLine, RiCloseLine, RiMenuLine, RiChatSmileLine,RiChatQuoteLine } from "react-icons/ri";
 // import { motion, AnimatePresence } from "framer-motion";
-import { FaUserGraduate, FaChalkboardTeacher, FaChalkboard,FaBookOpen,FaLinkedin,FaTwitter,FaEnvelope ,FaCalendarAlt,FaClock,FaUser } from 'react-icons/fa';
-import { BsLightningCharge, BsStars,BsPeopleFill, BsBookFill, } from "react-icons/bs";
+import { FaUserGraduate, FaChalkboardTeacher, FaChalkboard,FaBookOpen,FaLinkedin,FaTwitter,FaEnvelope ,FaCalendarAlt,FaClock,FaUser,FaDollarSign, FaCode,FaBookmark,FaQuoteLeft,FaGraduationCap,FaCheckCircle,FaClipboardList,FaArrowRight } from 'react-icons/fa';
+import { BsLightningCharge, BsStars,BsPeopleFill, BsBookFill } from "react-icons/bs";
 import { IoSchoolOutline } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
 import axios from "axios"
@@ -821,126 +821,191 @@ const CourseCard = () => {
     }, []);
   return (
     <>
-      {courses.map((course, index) => (
-  <motion.div  key={course._id}
+ {courses.map((course, index) => (
+  <motion.div
+    key={course._id}
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
     whileHover={{ 
-      y: -5,
+      y: -12,
       scale: 1.02,
-      transition: { duration: 0.2 }
+      transition: { duration: 0.5, ease: "easeOut" }
     }}
-    className="bg-gradient-to-b from-white via-gray-50 to-gray-100/50 rounded-3xl fonting
-      shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:shadow-[0_20px_50px_rgb(0,0,0,0.15)]
-      transform transition-all duration-300 overflow-hidden border border-gray-200/50
-      backdrop-blur-sm"
+    className="relative bg-gradient-to-br from-white via-white to-blue-50/30 rounded-[2.8rem] overflow-hidden
+      shadow-[0_15px_60px_rgba(8,_112,_184,_0.18)] hover:shadow-[0_25px_80px_rgba(8,_112,_184,_0.28)]
+      transform transition-all duration-700 border border-blue-100/50
+      backdrop-blur-3xl"
   >
-    {/* Image Section */}
+    {/* Premium Image Section with Enhanced Overlay */}
     <div className="relative group">
       <div className="absolute inset-0 bg-gradient-to-t 
-        from-black/90 via-black/50 to-transparent z-10 
-        group-hover:from-black/95 transition-all duration-300" />
+        from-[#000B1D]/98 via-[#000B1D]/75 to-transparent z-10 
+        opacity-90 group-hover:opacity-80 transition-all duration-700" />
+      
+      {/* Course Image with Premium Animation */}
       <img 
         src={course.thumbnail}
         alt={course.title}
-        className="w-full h-64 object-cover transform group-hover:scale-110 
-          transition-transform duration-700 ease-in-out"
+        className="w-full h-[22rem] object-cover transform group-hover:scale-110 
+          transition-all duration-1200 ease-out filter brightness-110 contrast-105"
       />
-  
-      {/* Top Row */}
-      <div className="absolute top-4 left-0 right-0 px-4 z-20 flex justify-between items-center">
-        {/* Level Badge */}
-        <div className="flex items-center space-x-2 bg-white/95 backdrop-blur-md px-4 py-2 
-          rounded-2xl shadow-lg border border-white/20">
-          <div className="w-2 h-2 rounded-full animate-pulse"
-            style={{ backgroundColor: getLevelColor(course.level) }} />
-          <span className="text-sm font-semibold bg-gradient-to-r from-gray-900 to-gray-700 
-            text-transparent bg-clip-text">
-            {course.level}
+
+      {/* Premium Glass Effect Top Bar */}
+      <div className="absolute top-6 left-0 right-0 px-8 z-20 flex justify-between items-center">
+        {/* Enhanced Level Indicator */}
+        <div className="flex items-center space-x-3 bg-white/95 backdrop-blur-2xl 
+          px-7 py-3.5 rounded-full shadow-2xl border border-white/60
+          hover:bg-white/98 hover:border-blue-200/60 transition-all duration-500">
+          <div className="relative">
+            <div className="w-3.5 h-3.5 rounded-full animate-pulse"
+              style={{ backgroundColor: getLevelColor(course.level) }} />
+            <div className="absolute inset-0 w-3.5 h-3.5 rounded-full animate-ping opacity-50"
+              style={{ backgroundColor: getLevelColor(course.level) }} />
+          </div>
+          <span className="text-sm font-extrabold bg-gradient-to-r 
+            from-blue-900 to-blue-700 text-transparent bg-clip-text tracking-wider">
+            {course.level.toUpperCase()}
           </span>
         </div>
-  
-        {/* Price Tag */}
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white 
-          px-6 py-2 rounded-2xl font-bold shadow-lg flex items-center space-x-2
-          border border-blue-400/20">
-          <span className="text-xs text-blue-200 uppercase">USD</span>
-          <span className="text-lg">${course.price}</span>
+
+        {/* Premium Price Tag with Glow Effect */}
+        <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600
+          px-8 py-3.5 rounded-full font-bold shadow-2xl 
+          flex items-center space-x-2.5 border border-white/20
+          hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 
+          transition-all duration-500 group/price
+          hover:shadow-[0_0_30px_rgba(37,_99,_235,_0.3)]">
+          <FaDollarSign className="text-blue-200 text-sm group-hover/price:scale-110 
+            transition-transform duration-300" />
+          <span className="text-2xl text-white font-black tracking-wider">
+            {course.price}
+          </span>
         </div>
       </div>
-  
-      {/* Language Badge */}
-      <div className="absolute top-20 left-4 z-20">
-        <div className="flex items-center space-x-2 bg-black/30 backdrop-blur-md 
-          px-4 py-2 rounded-2xl border border-white/10">
-          <FiBookOpen className="text-blue-300" />
-          <span className="text-sm font-medium text-white">
+
+      {/* Enhanced Language Badge with Glowing Effect */}
+      <div className="absolute top-36 left-8 z-20">
+        <div className="flex items-center space-x-3.5 bg-black/35 backdrop-blur-2xl 
+          px-7 py-3.5 rounded-full border border-white/15 group/lang
+          hover:bg-black/45 hover:border-white/25 transition-all duration-500
+          hover:shadow-[0_0_25px_rgba(59,_130,_246,_0.2)]">
+          <FaCode className="text-blue-300 text-lg group-hover/lang:rotate-12 
+            transition-transform duration-300" />
+          <span className="text-sm font-bold text-white tracking-wider">
             {course.language}
           </span>
         </div>
       </div>
-  
-      {/* Title and Small Info */}
-      <div className="absolute bottom-0 left-0 right-0 p-6 z-20">
-        <div className="space-y-4">
-          <h3 className="text-2xl font-bold text-white leading-tight group-hover:text-blue-200 
-            transition-colors duration-300">
-            {course.title}
-          </h3>
+
+      {/* Premium Title Section with Enhanced Typography */}
+      <div className="absolute bottom-0 left-0 right-0 p-9 z-20">
+        <h3 className="text-3xl font-extrabold text-white leading-tight
+          group-hover:text-blue-100 transition-colors duration-500
+          tracking-tight drop-shadow-2xl">
+          {course.title}
+        </h3>
+      </div>
+    </div>
+
+    {/* Enhanced Content Section with More Elegant Spacing */}
+    <div className="p-9 space-y-9">
+      {/* Modern Category Tags with Hover Effects */}
+      <div className="flex flex-wrap gap-3">
+        {course.category.split(',').map((cat, i) => (
+          <span key={i} className="px-7 py-3 bg-gradient-to-r from-blue-50 via-indigo-50/70 to-purple-50/50
+            text-blue-700 rounded-full text-sm font-bold border border-blue-100/80
+            hover:shadow-lg hover:scale-105 transition-all duration-300 flex items-center space-x-2.5
+            hover:border-blue-200/80 group/tag">
+            <FaBookmark className="text-blue-500 text-sm group-hover/tag:rotate-12 
+              transition-transform duration-300" />
+            <span className="tracking-wide">{cat.trim()}</span>
+          </span>
+        ))}
+      </div>
+
+      {/* Premium Description Box with Enhanced Glass Effect */}
+      <div className="bg-gradient-to-br from-blue-50/60 via-white to-purple-50/40 p-8 
+        rounded-2xl border border-blue-100/90 hover:shadow-xl transition-all duration-500
+        group/desc hover:border-blue-200/90">
+        <div className="flex items-start space-x-4">
+          <FaQuoteLeft className="text-blue-400 text-xl group-hover/desc:rotate-12 
+            transition-transform duration-300" />
+          <p className="text-gray-700 text-sm leading-relaxed font-medium">
+            {course.description}
+          </p>
         </div>
       </div>
-    </div>
-  
-    {/* Content Section */}
-    <div className="p-6 space-y-6">
-      
-      {/* Category */}
-      <div className="flex flex-wrap gap-2">
-        <span className="px-4 py-1.5 bg-gradient-to-r from-blue-50 to-indigo-50 
-          text-blue-700 rounded-xl text-sm font-medium border border-blue-100/80
-          hover:shadow-md transition-shadow duration-200">
-          {course.category}
-        </span>
+
+      {/* Learning Outcomes with Enhanced Visual Hierarchy */}
+      <div className="bg-gradient-to-r from-blue-50/90 to-indigo-50/60 p-8 rounded-2xl 
+        border border-blue-200/60 hover:shadow-xl transition-all duration-500 group/learn
+        hover:border-blue-300/60">
+        <div className="flex items-center space-x-4 mb-5">
+          <div className="p-2.5 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl
+            shadow-lg group-hover/learn:shadow-blue-500/30 transition-all duration-500">
+            <FaGraduationCap className="text-white text-xl group-hover/learn:rotate-12 
+              transition-transform duration-300" />
+          </div>
+          <h4 className="text-lg font-extrabold text-blue-900 tracking-wide">
+            What you'll learn
+          </h4>
+        </div>
+        <ul className="space-y-3.5">
+          {course.whatYouWillLearn.filter(Boolean).map((item, i) => (
+            <li key={i} className="flex items-start space-x-3.5 group/item">
+              <FaCheckCircle className="text-blue-500 text-lg mt-0.5 flex-shrink-0 
+                group-hover/item:scale-110 transition-transform duration-300" />
+              <span className="text-blue-800/90 text-sm font-medium">{item.trim()}</span>
+            </li>
+          ))}
+        </ul>
       </div>
-  
-      {/* Description */}
-      <div className="bg-gradient-to-r from-gray-50 to-white p-4 rounded-2xl border border-gray-100">
-        <p className="text-gray-600 text-sm leading-relaxed">
-          {course.description}
-        </p>
+
+      {/* Requirements Section with Modern Design */}
+      <div className="bg-gradient-to-r from-indigo-50/60 to-purple-50/40 p-8 rounded-2xl 
+        border border-indigo-200/60 hover:shadow-xl transition-all duration-500 group/req
+        hover:border-indigo-300/60">
+        <div className="flex items-center space-x-4 mb-5">
+          <div className="p-2.5 bg-gradient-to-br from-indigo-600 to-indigo-700 rounded-xl
+            shadow-lg group-hover/req:shadow-indigo-500/30 transition-all duration-500">
+            <FaClipboardList className="text-white text-xl group-hover/req:rotate-12 
+              transition-transform duration-300" />
+          </div>
+          <h4 className="text-lg font-extrabold text-indigo-900 tracking-wide">
+            Requirements
+          </h4>
+        </div>
+        <ul className="space-y-3.5">
+          {course.requirements.filter(Boolean).map((req, i) => (
+            <li key={i} className="flex items-start space-x-3.5 group/item">
+              <FaArrowRight className="text-indigo-500 text-lg mt-0.5 flex-shrink-0
+                group-hover/item:translate-x-1 transition-transform duration-300" />
+              <span className="text-indigo-800/90 text-sm font-medium">{req.trim()}</span>
+            </li>
+          ))}
+        </ul>
       </div>
-  
-      {/* What you will learn */}
-      <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100">
-        <h4 className="text-md font-semibold mb-2 text-gray-800">What you will learn:</h4>
-        <p className="text-gray-600 text-sm">{course.whatYouWillLearn}</p>
-      </div>
-  
-      {/* Requirements */}
-      <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100">
-        <h4 className="text-md font-semibold mb-2 text-gray-800">Requirements:</h4>
-        <p className="text-gray-600 text-sm">{course.requirements}</p>
-      </div>
-  
-      {/* Enroll Button */}
-      <motion.button
-        whileHover={{ scale: 1.02, y: -2 }}
-        whileTap={{ scale: 0.98 }}
-        className="w-full bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-800 
-          hover:from-blue-700 hover:via-blue-800 hover:to-indigo-900 
-          text-white font-bold py-4 rounded-2xl shadow-lg 
-          hover:shadow-blue-500/25 transition-all duration-200
-          flex items-center justify-center space-x-2 group"
-      >
-        <Link to={`/courses/${course._id}`}>
-  <span className="text-lg text-blue-600 hover:underline">Enroll Now</span>
-</Link>
-        <FiArrowRight className="text-lg group-hover:translate-x-1 transition-transform duration-200" />
-      </motion.button>
-  
+
+      {/* Premium Enroll Button with Enhanced Animation */}
+      <Link to={`/courses/${course._id}`} className="block">
+        <motion.button
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.98 }}
+          className="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600
+            hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700
+            text-white font-extrabold py-7 rounded-2xl shadow-2xl
+            hover:shadow-[0_15px_45px_-5px_rgba(37,_99,_235,_0.35)] transition-all duration-500
+            flex items-center justify-center space-x-4 group/btn
+            border border-white/10 hover:border-white/20"
+        >
+          <span className="text-lg tracking-wider">Enroll Now</span>
+          <FaArrowRight className="text-lg group-hover/btn:translate-x-2.5 
+            transition-transform duration-500" />
+        </motion.button>
+      </Link>
     </div>
   </motion.div>
-  ))}
+))}
   </>
 )
 }
@@ -1116,24 +1181,214 @@ const SearchFilters = ({ filters, setFilters, currentUser, currentTime, resetFil
       </div>
 
       {/* Active Category Options */}
-      {activeCategory && (
-        <AnimatePresence>
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="mb-8"
+   {activeCategory && (
+  <AnimatePresence>
+    <motion.div
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
+      className="mb-10 relative"
+    >
+      {/* Decorative Background Elements */}
+      <div className="absolute inset-0 bg-gradient-to-r from-purple-50 via-indigo-50/50 to-blue-50 
+        rounded-xl -m-2 blur-xl opacity-70"></div>
+
+      {/* Main Filter Container */}
+      <div className="relative bg-white/90 backdrop-blur-xl rounded-xl p-6
+        shadow-[0_10px_40px_-15px_rgba(0,0,0,0.1)] border border-purple-100/50">
+
+        {/* Filter Header */}
+        <div className="flex items-center mb-4">
+          <FiFilter className="w-5 h-5 text-purple-600 mr-3" />
+          <h3 className="text-lg font-bold bg-gradient-to-r from-purple-900 to-indigo-800 
+            bg-clip-text text-transparent">
+            {activeCategory === 'ageGroup' 
+              ? 'Age Group' 
+              : activeCategory.charAt(0).toUpperCase() + activeCategory.slice(1)} Filter
+          </h3>
+        </div>
+
+        {/* Enhanced Select Field */}
+        <div className="relative">
+          <select
+            value={filters[activeCategory]}
+            onChange={(e) => setFilters({ ...filters, [activeCategory]: e.target.value })}
+            className="w-full bg-gray-50/50 border border-purple-100 text-gray-700 
+              py-3.5 px-4 pr-10 rounded-lg appearance-none cursor-pointer
+              focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400
+              transition-all duration-300 hover:border-purple-300"
           >
-            <SelectField
-              label={activeCategory === 'ageGroup' ? 'Age Group' : activeCategory.charAt(0).toUpperCase() + activeCategory.slice(1)}
-              icon={FiFilter}
-              value={filters[activeCategory]}
-              onChange={(e) => setFilters({ ...filters, [activeCategory]: e.target.value })}
-              options={filterOptions[activeCategory]}
-            />
+            <option value="">Select {activeCategory === 'ageGroup' ? 'an age group' : `a ${activeCategory}`}</option>
+
+            {/* Grouped Options */}
+            {[
+              {
+                group: "Academic Courses (School & College)",
+                options: [
+                  { value: "Matric & Intermediate", label: "Matric & Intermediate (Science, Arts, Commerce)" },
+                  { value: "O-Level & A-Level", label: "O-Level & A-Level (Cambridge & Federal Board)" },
+                  { value: "Engineering Entrance Exams", label: "Engineering Entrance Exams (ECAT, NUST, PIEAS, GIKI)" },
+                  { value: "Medical Entrance Exams", label: "Medical Entrance Exams (MDCAT, NUMS, AKU)" },
+                  { value: "CSS & FPSC Preparation", label: "CSS & FPSC Preparation" },
+                  { value: "Bachelors & Masters", label: "Bachelors & Masters (BS, MS, MBA, MPhil, PhD)" },
+                ]
+              },
+              {
+                group: "Professional & Skill-Based Courses",
+                options: [
+                  { value: "Freelancing", label: "Freelancing (Fiverr, Upwork, PeoplePerHour)" },
+                  { value: "Graphic Designing", label: "Graphic Designing (Photoshop, Illustrator, Canva)" },
+                  { value: "Digital Marketing", label: "Digital Marketing (SEO, FB Ads, Google Ads, SMM)" },
+                  { value: "E-commerce", label: "E-commerce (Daraz, Amazon, Shopify, eBay, Etsy)" },
+                  { value: "Web Development", label: "Web Development (HTML, CSS, JS, React, Laravel, WP)" },
+                  { value: "App Development", label: "App Development (Flutter, React Native, Android, iOS)" },
+                  { value: "Cyber Security", label: "Cyber Security & Ethical Hacking" },
+                  { value: "Data Science & AI", label: "Data Science & AI (Python, ML, DL, ChatGPT Tools)" },
+                ]
+              },
+              {
+                group: "Language & Communication Courses",
+                options: [
+                  { value: "English Language", label: "English Language (IELTS, TOEFL, Spoken)" },
+                  { value: "Urdu & Pashto Writing", label: "Urdu & Pashto Writing" },
+                  { value: "Foreign Languages", label: "Chinese, German, French Language Courses" },
+                ]
+              },
+              {
+                group: "Government & Competitive Exam Preparation",
+                options: [
+                  { value: "Government Exams", label: "CSS, PMS, FPSC, PPSC, SPSC, KPPSC, BPSC" },
+                  { value: "Military Test Prep", label: "Pak Army, Navy, Air Force (ISSB, Initial Tests)" },
+                  { value: "Police & Agencies Prep", label: "Police, FIA, ASF, NAB Exam Preparation" },
+                  { value: "University Entry Tests", label: "LUMS, IBA, FAST, GIKI Entry Tests" },
+                ]
+              },
+              {
+                group: "Business & Finance",
+                options: [
+                  { value: "Accounting & Finance", label: "Accounting & Finance (QuickBooks, Excel, Tally, SAP)" },
+                  { value: "Stock & Crypto Trading", label: "Stock Market & Crypto Trading" },
+                  { value: "Entrepreneurship", label: "Entrepreneurship & Business Startup Guide" },
+                ]
+              },
+              {
+                group: "Personal Development",
+                options: [
+                  { value: "Time Management", label: "Time Management & Productivity" },
+                  { value: "Public Speaking", label: "Public Speaking & Communication Skills" },
+                  { value: "Leadership", label: "Leadership & Team Management" },
+                  { value: "Career Counseling", label: "Career Counseling & Job Interview Preparation" },
+                ]
+              },
+              {
+                group: "Islamic & Religious Studies",
+                options: [
+                  { value: "Quran & Tajweed", label: "Quran Tafseer & Tajweed" },
+                  { value: "Hadith & Fiqh", label: "Hadith & Fiqh Courses" },
+                  { value: "Islamic Finance", label: "Islamic Banking & Finance" },
+                ]
+              }
+            ].map((groupObj) => (
+              <optgroup key={groupObj.group} label={groupObj.group}>
+                {groupObj.options.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </optgroup>
+            ))}
+          </select>
+
+          {/* Custom Select Arrow */}
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none
+            text-purple-600 transition-transform duration-300
+            transform group-hover:translate-x-1">
+            <FiChevronDown className="w-5 h-5" />
+          </div>
+        </div>
+
+        {/* Active Filter Tags */}
+        {filters[activeCategory] && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mt-4 flex items-center gap-2 flex-wrap"
+          >
+            <motion.span
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+              className="inline-flex items-center px-4 py-2 rounded-full
+                bg-purple-100/70 text-purple-700 text-sm font-medium
+                border border-purple-200/50"
+            >
+              {[
+                ...[].concat(
+                  ...[
+                    // flatten all group options for lookup
+                    {
+                      options: [
+                        { value: "Matric & Intermediate", label: "Matric & Intermediate (Science, Arts, Commerce)" },
+                        { value: "O-Level & A-Level", label: "O-Level & A-Level (Cambridge & Federal Board)" },
+                        { value: "Engineering Entrance Exams", label: "Engineering Entrance Exams (ECAT, NUST, PIEAS, GIKI)" },
+                        { value: "Medical Entrance Exams", label: "Medical Entrance Exams (MDCAT, NUMS, AKU)" },
+                        { value: "CSS & FPSC Preparation", label: "CSS & FPSC Preparation" },
+                        { value: "Bachelors & Masters", label: "Bachelors & Masters (BS, MS, MBA, MPhil, PhD)" },
+                        { value: "Freelancing", label: "Freelancing (Fiverr, Upwork, PeoplePerHour)" },
+                        { value: "Graphic Designing", label: "Graphic Designing (Photoshop, Illustrator, Canva)" },
+                        { value: "Digital Marketing", label: "Digital Marketing (SEO, FB Ads, Google Ads, SMM)" },
+                        { value: "E-commerce", label: "E-commerce (Daraz, Amazon, Shopify, eBay, Etsy)" },
+                        { value: "Web Development", label: "Web Development (HTML, CSS, JS, React, Laravel, WP)" },
+                        { value: "App Development", label: "App Development (Flutter, React Native, Android, iOS)" },
+                        { value: "Cyber Security", label: "Cyber Security & Ethical Hacking" },
+                        { value: "Data Science & AI", label: "Data Science & AI (Python, ML, DL, ChatGPT Tools)" },
+                        { value: "English Language", label: "English Language (IELTS, TOEFL, Spoken)" },
+                        { value: "Urdu & Pashto Writing", label: "Urdu & Pashto Writing" },
+                        { value: "Foreign Languages", label: "Chinese, German, French Language Courses" },
+                        { value: "Government Exams", label: "CSS, PMS, FPSC, PPSC, SPSC, KPPSC, BPSC" },
+                        { value: "Military Test Prep", label: "Pak Army, Navy, Air Force (ISSB, Initial Tests)" },
+                        { value: "Police & Agencies Prep", label: "Police, FIA, ASF, NAB Exam Preparation" },
+                        { value: "University Entry Tests", label: "LUMS, IBA, FAST, GIKI Entry Tests" },
+                        { value: "Accounting & Finance", label: "Accounting & Finance (QuickBooks, Excel, Tally, SAP)" },
+                        { value: "Stock & Crypto Trading", label: "Stock Market & Crypto Trading" },
+                        { value: "Entrepreneurship", label: "Entrepreneurship & Business Startup Guide" },
+                        { value: "Time Management", label: "Time Management & Productivity" },
+                        { value: "Public Speaking", label: "Public Speaking & Communication Skills" },
+                        { value: "Leadership", label: "Leadership & Team Management" },
+                        { value: "Career Counseling", label: "Career Counseling & Job Interview Preparation" },
+                        { value: "Quran & Tajweed", label: "Quran Tafseer & Tajweed" },
+                        { value: "Hadith & Fiqh", label: "Hadith & Fiqh Courses" },
+                        { value: "Islamic Finance", label: "Islamic Banking & Finance" }
+                      ]
+                    }
+                  ].map(group => group.options)
+                )
+              ].find(opt => opt.value === filters[activeCategory])?.label}
+              <button
+                onClick={() => setFilters({ ...filters, [activeCategory]: '' })}
+                className="ml-2 hover:text-purple-900 transition-colors duration-200"
+              >
+                ×
+              </button>
+            </motion.span>
           </motion.div>
-        </AnimatePresence>
-      )}
+        )}
+
+        {/* Helper Text */}
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="mt-3 text-sm text-gray-500"
+        >
+          {filters[activeCategory] 
+            ? `Showing results for selected ${activeCategory}`
+            : `Select a ${activeCategory} to filter results`}
+        </motion.p>
+      </div>
+    </motion.div>
+  </AnimatePresence>
+)}
+
 
       {/* Active Filters */}
       <AnimatePresence>
